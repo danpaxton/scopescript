@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "\"unknown\""
+    "url": "git+https://github.com/danpaxton/scopescript.git"
   },
   "keywords": [
     "Javascript",

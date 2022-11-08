@@ -124,14 +124,14 @@ const binops = {
 }
 
 const builtInFuncs = {
-    'type': (scope, e) => {
+    type: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: type(...) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.string(evalExpr(scope, args[0]).kind);
     },
-    'len': (scope, e) => {
+    len: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: len(...) takes exactly 1 argument: Received ${args.length}.`);
@@ -149,7 +149,7 @@ const builtInFuncs = {
         }
         return a.number(c);
     },
-    'ord': (scope, e) => {
+    ord: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: ord(...) takes exactly 1 argument: Received ${args.length}.`);
@@ -163,7 +163,7 @@ const builtInFuncs = {
         }
         return a.number(char.value.charCodeAt(0));
     },
-    'abs': (scope, e) => {
+    abs: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: abs(...) takes exactly 1 argument: Received ${args.length}.`);
@@ -174,7 +174,7 @@ const builtInFuncs = {
         }
         return a.number(Math.abs(num.value));
     },
-    'pow': (scope, e) => {
+    pow: (scope, e) => {
         const args = e.args;
         if (args.length !== 2) {
             error(`Line ${e.line}: pow(...) takes exactly 2 arguments: Received ${args.length}.`);
@@ -185,14 +185,14 @@ const builtInFuncs = {
         }
         return a.number(Math.pow(b.value, p.value));
     },
-    'bool': (scope, e) => {
+    bool: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: bool(...) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.boolean(Boolean(evalExpr(scope, args[0]).value));
     },
-    'num': (scope, e) => {
+    num: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
             error(`Line ${e.line}: num(...) takes exactly 1 argument: Received ${args.length}.`);
@@ -210,14 +210,14 @@ const builtInFuncs = {
         }
         return a.number(Number(num.value));
     },
-    'str': (scope, e) => {
+    str: (scope, e) => {
         const args = e.args;
         if (args.length != 1) {
             error(`Line ${e.line}: str(...) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.string(a.strRep(evalExpr(scope, args[0])));
     },
-    'keys': (scope, e) => {
+    keys: (scope, e) => {
         const args = e.args;
         if (args.length != 1) {
             error(`Line ${e.line}: keys(...) takes exactly 1 argument: Received ${args.length}.`);
@@ -228,7 +228,7 @@ const builtInFuncs = {
         }
         return a.collection(Object.assign({}, Object.keys(c.value)));
     },
-    'print': (scope, e) => {
+    print: (scope, e) => {
         (async () => {
             const out = scope.out();
             
