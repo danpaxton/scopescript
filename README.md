@@ -18,7 +18,7 @@ Closures are represented as an object with params, body, parent and env attribut
 ## Installation
 Clone repository,
 ```console
-$ git clone https://github.com/danpaxton/scopescript-parser.git`
+$ git clone https://github.com/danpaxton/scopescript.git
 $ cd scopescript
 ```
 Install and run tests,
