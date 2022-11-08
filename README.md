@@ -1,5 +1,4 @@
 # ScopeScript
-View on npm: https://www.npmjs.com/package/scopescript-parser<br>
 View language IDE: https://github.com/danpaxton/scopescript-ide<br>
 
 ## Parser

@@ -19,5 +19,13 @@
   "dependencies": {
     "jest": "^29.2.0",
     "parsimmon": "^1.18.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/danpaxton/scopescript/issues"
+  },
+  "homepage": "https://github.com/danpaxton/scopescript#readme",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {}
 }
