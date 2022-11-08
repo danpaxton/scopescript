@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const r = require("./result");
 
-const builtInFuncs = ['type', 'ord', 'abs', 'len', 'bool', 'str', 'num', 'pow', 'keys', 'print'];
+const builtInFuncs = new Set(['type', 'ord', 'abs', 'len', 'bool', 'str', 'num', 'pow', 'keys', 'print']);
 
 // getDuplicate<T>(a: T[]): T | undefined
 const getDuplicate = a => {
@@ -42,7 +42,7 @@ function vcExpr(boundVars, expression) {
         case 'call': {
             const x = expression.fun
             if (x.kind === 'variable') {
-                if (boundVars.has(x.name) || builtInFuncs.some(e => e === x.name)) {
+                if (boundVars.has(x.name) || builtInFuncs.has(x.name)) {
                     return r.foldLeftNoAcc(vcExpr, boundVars, expression.args);
                 } else {
                     return r.error(`Line ${expression.line}: function ${x.name}(...) is not defined.`)
@@ -57,7 +57,7 @@ function vcExpr(boundVars, expression) {
                 if (boundVars.has(x.name)) {
                     return r.ok(boundVars);
                 }
-                else if(builtInFuncs.some(e => e === x.name)) {
+                else if(builtInFuncs.has(x.name)) {
                     return r.error(`Line ${expression.line}: built-in funtion ${x.name}(...) cannot be referenced.`); 
                 } else {
                     return r.error(`Line ${expression.line}: collection '${x.name}' is not defined.`);                
@@ -71,7 +71,7 @@ function vcExpr(boundVars, expression) {
                 if (boundVars.has(x.name)) {
                     return vcExpr(boundVars, expression.expr);
                 }
-                else if(builtInFuncs.some(e => e === x.name)) {
+                else if(builtInFuncs.has(x.name)) {
                     return r.error(`Line ${expression.line}: built-in funtion ${x.name}(...) is not subscriptable.`) 
                 }
                 else {

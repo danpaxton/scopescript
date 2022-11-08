@@ -100,9 +100,8 @@ const bool = lineNum.chain(line => P.string('true').map(_ => true).or(P.string('
 const none = lineNum.chain(line => P.string('none').desc('none').skip(ws).map(_ => a.none(line)));
 
 // Parser that matches a identifier character (upper or lower case) 0 or more times.
-const name = P.regexp(/[a-zA-Z_$][a-zA-Z_$0-9]*/).assert(name => 
-    !(['if', 'else if', 'else', 'for', 'while', 'return', 'break', 'continue', 'delete', 'none']).includes(name))
-    .desc('identifier').skip(ws);
+const special = new Set(['if', 'else', 'for', 'while', 'return', 'break', 'continue', 'delete', 'none']);
+const name = P.regexp(/[a-zA-Z_$][a-zA-Z_$0-9]*/).assert(name => !special.has(name)).desc('identifier').skip(ws);
 
 // Parser that matches a closure and then maps parameters, and body to a an ast closure.
 const closure = P.lazy(() => lineNum.chain(line => name.sepBy(operator(',')).wrap(operator('('), operator(')'))
