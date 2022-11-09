@@ -85,7 +85,7 @@ const numMatch = P.alt(P.regexp(/[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+
     .desc('number').skip(ws);
 
 // Matches strings.
-const stringMatch = P.regex(/(['"])([^'"]*)\1/).desc('string').map(str => str.slice(1, str.length - 1)).skip(ws);
+const stringMatch = P.regex(/(['"])(\1|(.(?!\1))*.\1)/s).desc('string').map(str => str.slice(1, str.length - 1)).skip(ws);
 
 // Parser that matches a number as a string (+ or -) in range [0-9] 1 or more times and then maps to an ast number.
 const num = lineNum.chain(line => numMatch.map(str => a.number(str, line)));
@@ -118,12 +118,13 @@ const collection = P.lazy(() => lineNum.chain(line =>
 
 
 // Parser that matches using a bool, variable, string, collection, closure, none, or num parser. Otherwise parse expression between parentheses.
-const atom = ws.then(collection
-    .or(closure)
+const atom = ws.then(string
+    .or(num)
     .or(bool)
     .or(none)
     .or(num)
-    .or(string)
+    .or(closure)
+    .or(collection)
     .or(lineNum.chain(line => name.map(str => a.variable(str, line)))) // map name to an ast variable.
     .or(P.lazy(() => expr.wrap(operator('('), operator(')')))));
 
