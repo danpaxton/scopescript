@@ -57,11 +57,11 @@ Below is a set of instructions that define valid statements and expressions for 
 ### Lexical
 `type boolean ::= true | false`<br>
 
-`type number ::= [+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)? | Infinity | -Infinity `<br>
+`type number ::= /[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/ | Infinity | -Infinity `<br>
 
-`type string ::= (['"])([^'"]*)\1`<br>
+`type string ::= /(['"])(\1|(.(?!\1))*.\1)/s`<br>
 
-`type name ::= [a-zA-Z_$][a-zA-Z_$0-9]*`<br>
+`type name ::= /[a-zA-Z_$][a-zA-Z_$0-9]*/`<br>
 
 `type none ::= none`<br>
 
