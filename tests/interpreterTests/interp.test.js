@@ -386,8 +386,8 @@ test('built-in str collection more than one', () => {
 });
 
 test('built-in str collection nested', () => {
-    const r = i.evalExpr(s.State(null), p.parseExpression(' str({ a: 1, b: { x: 2, y: 3 } }) '));
-    expect(r).toEqual(a.string("{ a: 1, b: { x: 2, y: 3 } }"));
+    const r = i.evalExpr(s.State(null), p.parseExpression(` str({ a: "1", b: { x: '2', y: 3 } }) `));
+    expect(r).toEqual(a.string(`{ a: '1', b: { x: '2', y: 3 } }`));
 });
 
 test('built-in str closure', () => {
@@ -397,7 +397,7 @@ test('built-in str closure', () => {
 
 test('built-in keys', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' keys({ a : 1, b : 2, c : 3}) '));
-    expect(r).toEqual(a.collection({ '0': 'a', '1': 'b', '2': 'c'  }));
+    expect(r).toEqual(a.collection({ '0': a.string('a'), '1': a.string('b'), '2': a.string('c')  }));
 });
 
 test('built-in keys empty', () => {

@@ -226,21 +226,18 @@ const builtInFuncs = {
         if (!a.isCollection(c)) {
             error(`Line ${e.line}: invalid argument type for keys(...): '${c.kind}'.`);
         }
-        return a.collection(Object.assign({}, Object.keys(c.value)));
+        return a.collection(Object.assign({}, Object.keys(c.value).map(k => a.string(k))));
     },
     print: (scope, e) => {
-        (async () => {
-            const out = scope.out();
-            
-            for (const arg of e.args) {
-                // Push formatted value.
-                out.push(a.strRep(evalExpr(scope, arg)));
-                // Seperate args with space.
-                out.push(' ');
-            }
-            // Prints at least one newline charcacter.
-            out.push('\n');
-        })();
+        const out = scope.out();
+        for (const arg of e.args) {
+            // Push formatted value.
+            out.push(a.strRep(evalExpr(scope, arg)));
+            // Seperate args with space.
+            out.push(' ');
+        }
+        // Prints at least one newline charcacter.
+        out.push('\n');
         return a.none(null);
     }
 }
