@@ -7,5 +7,3 @@ exports.interpProgram = interpProgram;
 // Parse and interpret progam.
 const runProgram = input => interpProgram(parseProgram(input));
 exports.runProgram = runProgram;
-
-console.log(runProgram(`print(1 + none);`).out.join(""));
