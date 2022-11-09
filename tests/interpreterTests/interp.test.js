@@ -293,6 +293,11 @@ test('call one argument', () => {
     expect(r).toEqual(['return', a.number(1)]);
 });
 
+test('call arguments override global variables', () => {
+    const r = i.evalBlock(s.State(null), p.parseProgram('a = -1; x = (a) => a; return x(1);').value, s.Flags(true, false));
+    expect(r).toEqual(['return', a.number(1)]);
+});
+
 test('call more than one argument', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a, b) => a + b; return x(2, 3);').value, s.Flags(true, false));
     expect(r).toEqual(['return', a.number(5)]);
