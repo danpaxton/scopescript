@@ -12,7 +12,7 @@ exports.Flags = Flags;
 
 // Stores a link to creating (parent) state, and current variable mapping.
 // State(parent: State, value: Object, out: String[]): State
-const State = (parent, value = {}, out = []) => {
+const State = (parent, value = new Map(), out = []) => {
     return Object.freeze({ 
         parent: () => parent, 
         value: () => value,
@@ -22,7 +22,7 @@ const State = (parent, value = {}, out = []) => {
 exports.State = State;
 
 // childState(scope: State): State
-const childState = (scope) => State(scope, {}, scope.out());
+const childState = (scope) => State(scope, new Map(), scope.out());
 exports.childState = childState;
 
 // Stores a link to creating (parent) state, parameter names, function body, 
@@ -59,8 +59,8 @@ const findInScope = (state, name) => {
     let currState = state, currVars; 
     while (currState) {
         currVars = currState.value();
-        if (name in currVars) {
-            return currVars[name];
+        if (currVars.has(name)) {
+            return currVars.get(name);
         }
         currState = currState.parent();
     }
@@ -74,12 +74,12 @@ const setVariable = (state, name, val) => {
     let currState = state, currVars;
     while (currState) {
         currVars = currState.value();
-        if (name in currVars) {
-            currVars[name] = val;
+        if (currVars.has(name)) {
+            currVars.set(name, val);
             return;
         }
         currState = currState.parent();
     }
-    state.value()[name] = val;
+    state.value().set(name, val);
 }
 exports.setVariable = setVariable;

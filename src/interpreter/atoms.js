@@ -31,15 +31,14 @@ const collection = (value) => {
 exports.collection = collection
 
 // formatCollection(v: Atom): String
-const formatCollection = (v) => {
-    const pairs = Object.entries(v.value);
+const formatCollection = (c) => {
+    let length = c.value.size - 1;
     const strCollec = [];
     strCollec.push("{ ");
-    for(let i = 0; i < pairs.length; ++i) {
-        const [k, v] = pairs[i];
+    for(const [k, v] of c.value) {
         const pairStr = `${k}: ${ isString(v) ? `'${v.value}'` : strRep(v) }`;
         strCollec.push(pairStr);
-        if (i < pairs.length - 1) {
+        if (0 < length--) {
             strCollec.push(', ');
         }
     }

@@ -3,6 +3,8 @@ const i = require("../../src/interpreter/interp.js");
 const a = require("../../src/interpreter/atoms.js");
 const s = require('../../src/interpreter/scope');
 
+const toMap = (o) => new Map(Object.entries(o));
+
 // Primitive tests
 
 test('none atom', () => {
@@ -33,18 +35,18 @@ test('Infinity test', () => {
 // Expression tests
 
 test('variable test', () => {
-    const r = i.evalExpr(s.State(null, { 'x': a.number(1)}), p.parseExpression(' x '));
+    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(1)})), p.parseExpression(' x '));
     expect(r).toEqual(a.number(1));
 });
 
 test('collection test', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' { a: 1} '));
-    expect(r).toEqual(a.collection({ a: a.number(1) }));
+    expect(r).toEqual(a.collection(toMap({ a: a.number(1) })));
 });
 
 test('collection nested test', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' { a: { b: 1, c: 2} } '));
-    expect(r).toEqual(a.collection({ a: a.collection({ b: a.number(1), c: a.number(2) })}));
+    expect(r).toEqual(a.collection(toMap({ a: a.collection(toMap({ b: a.number(1), c: a.number(2) }))})));
 });
 
 test('simple closure test', () => {
@@ -61,35 +63,35 @@ test('logical not', () => {
 });
 
 test('bit not', () => {
-    const r = i.evalExpr(s.State(null, { 'x': a.number(0)}), p.parseExpression('~x'));
+    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(0)})), p.parseExpression('~x'));
     expect(r).toEqual(a.number(-1));
 });
 
 test('pre-increment', () => {
-    const top = s.State(null, { x : a.boolean(true)});
+    const top = s.State(null, toMap({ x : a.boolean(true)}));
     const r = i.evalExpr(top, p.parseExpression('++x'));
     // returned value.
     expect(r).toEqual(a.number(2));
     // variable value.
-    expect(top.value().x).toEqual(a.number(2));
+    expect(top.value().get('x')).toEqual(a.number(2));
 });
 
 test('pre-decrement', () => {
-    const top = s.State(null, { x : a.boolean(true)});
+    const top = s.State(null, toMap({ x : a.boolean(true)}));
     const r = i.evalExpr(top, p.parseExpression('--x'));
     // returned value.
     expect(r).toEqual(a.number(0));
     // variable value.
-    expect(top.value().x).toEqual(a.number(0));
+    expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('unary plus', () => {
-    const r = i.evalExpr(s.State(null, { 'x': a.number(1)}), p.parseExpression('+x'));
+    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(1)})), p.parseExpression('+x'));
     expect(r).toEqual(a.number(1));
 });
 
 test('unary minus', () => {
-    const r = i.evalExpr(s.State(null, { 'x': a.number(1)}), p.parseExpression('-x'));
+    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(1)})), p.parseExpression('-x'));
     expect(r).toEqual(a.number(-1));
 });
 
@@ -211,30 +213,30 @@ test('arithmetic chain', () => {
 });
 
 test('attribute simple', () => {
-    const r = i.evalExpr(s.State(null, { x : a.collection({ a: a.number(1) }) }), p.parseExpression(' x.a '))
+    const r = i.evalExpr(s.State(null, toMap({ x : a.collection(toMap({ a: a.number(1) })) })), p.parseExpression(' x.a '))
     expect(r).toEqual(a.number(1));
 });
 
 test('attribute increment', () => {
-    const top = s.State(null, { x : a.collection({ a: a.number(1) }) });
+    const top = s.State(null, toMap({ x : a.collection(toMap({ a: a.number(1) })) }));
     const r = i.evalExpr(top, p.parseExpression(' ++x.a '))
     // returned value
     expect(r).toEqual(a.number(2));
     // value changes in memory.
-    expect(top.value().x.value.a).toEqual(a.number(2));
+    expect(top.value().get('x').value.get('a')).toEqual(a.number(2));
 });
 
 test('attribute increment', () => {
-    const top = s.State(null, { x : a.collection({ '1': a.number(1) }) });
+    const top = s.State(null, toMap({ x : a.collection(toMap({ '1': a.number(1) })) }));
     const r = i.evalExpr(top, p.parseExpression(' ++x[1] '))
     // returned value
     expect(r).toEqual(a.number(2));
     // value changes in memory.
-    expect(top.value().x.value['1']).toEqual(a.number(2));
+    expect(top.value().get('x').value.get('1')).toEqual(a.number(2));
 });
 
 test('attribute nested', () => {
-    const r = i.evalExpr(s.State(null, { x : a.collection({ a: a.collection({ b: a.number(1) }) })}), p.parseExpression('x.a.b'))
+    const r = i.evalExpr(s.State(null, toMap({ x : a.collection(toMap({ a: a.collection(toMap({ b: a.number(1) })) }))})), p.parseExpression('x.a.b'))
     expect(r).toEqual(a.number(1));
 });
 
@@ -244,12 +246,12 @@ test('attribute in-place', () => {
 });
 
 test('subscriptor simple', () => {
-    const r = i.evalExpr(s.State(null, { x : a.collection({ '1': a.number(1) }) }), p.parseExpression(' x[1] '))
+    const r = i.evalExpr(s.State(null, toMap({ x : a.collection(toMap({ '1': a.number(1) })) })), p.parseExpression(' x[1] '))
     expect(r).toEqual(a.number(1));
 });
 
 test('subscriptor non-existent', () => {
-    const r = i.evalExpr(s.State(null, { x : a.collection({}) }), p.parseExpression(' x[1] '))
+    const r = i.evalExpr(s.State(null, toMap({ x : a.collection(toMap({})) })), p.parseExpression(' x[1] '))
     expect(r).toEqual(a.none(null));
 });
 
@@ -280,6 +282,11 @@ test('ternary falseExpr', () => {
 
 test('call simple', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = () => 1; return x();').value, s.Flags(true, false));
+    expect(r).toEqual(['return', a.number(1)]);
+});
+
+test('tracks only enumerable properties', () => {
+    const r = i.evalBlock(s.State(null), p.parseProgram('toString = () => 1; if (true){ return toString(); }').value, s.Flags(true, false));
     expect(r).toEqual(['return', a.number(1)]);
 });
 
@@ -402,12 +409,12 @@ test('built-in str closure', () => {
 
 test('built-in keys', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' keys({ a : 1, b : 2, c : 3}) '));
-    expect(r).toEqual(a.collection({ '0': a.string('a'), '1': a.string('b'), '2': a.string('c')  }));
+    expect(r).toEqual(a.collection(toMap({ '0': a.string('a'), '1': a.string('b'), '2': a.string('c')  })));
 });
 
 test('built-in keys empty', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' keys({}) '));
-    expect(r).toEqual(a.collection({}));
+    expect(r).toEqual(a.collection(toMap({})));
 });
 
 test('built-in print empty', () => {
@@ -469,173 +476,173 @@ test('continue statement', () => {
 });
 
 test('delete statement attr', () => {
-    const top = s.State(null, { x: a.collection({ a: a.number(1) }) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({ a: a.number(1) })) }));
     const r = i.evalStmt(top, p.parseStatement(' delete x.a; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value.a).toEqual(undefined);
+    expect(top.value().get('x').value.get('a')).toEqual(undefined);
 });
 test('delete statement nested', () => {
-    const top = s.State(null, { x: a.collection({ y: a.collection({ z: a.number(1) })  }) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({ z: a.number(1) }))  })) }));
     const r = i.evalStmt(top, p.parseStatement(' delete x.y.z; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value.y.value.z).toEqual(undefined);
+    expect(top.value().get('x').value.get('y').value.get('z')).toEqual(undefined);
 });
 test('delete statement sub', () => {
-    const top = s.State(null, { x: a.collection({ '1': a.number(1) }) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({ '1': a.number(1) })) }));
     const r = i.evalStmt(top, p.parseStatement(' delete x[1]; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value[1]).toEqual(undefined);
+    expect(top.value().get('x').value.get('1')).toEqual(undefined);
 });
 test('assignment statement simple', () => {
-    const top = s.State(null, {});
+    const top = s.State(null);
     const r = i.evalStmt(top, p.parseStatement(' x = 1; '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(1));
+    expect(top.value().get('x')).toEqual(a.number(1));
 });
 
 test('assignment statement chain', () => {
-    const top = s.State(null, {});
+    const top = s.State(null);
     const r = i.evalStmt(top, p.parseStatement(' x = y = z = 1; '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(1));
-    expect(top.value().y).toEqual(a.number(1));
-    expect(top.value().z).toEqual(a.number(1));
+    expect(top.value().get('x')).toEqual(a.number(1));
+    expect(top.value().get('y')).toEqual(a.number(1));
+    expect(top.value().get('z')).toEqual(a.number(1));
 });
 
 test('assignment statement attribute', () => {
-    const top = s.State(null, { x: a.collection({}) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
     const r = i.evalStmt(top, p.parseStatement(' x.a = 1; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value.a ).toEqual(a.number(1));
+    expect(top.value().get('x').value.get('a')).toEqual(a.number(1));
 });
 
 test('assignment statement sub', () => {
-    const top = s.State(null, { x: a.collection({}) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
     const r = i.evalStmt(top, p.parseStatement(' x[1] = 1; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value[1]).toEqual(a.number(1));
+    expect(top.value().get('x').value.get('1')).toEqual(a.number(1));
 });
 
 test('assignment statement nested', () => {
-    const top = s.State(null, { x: a.collection({ y: a.collection({})  }) });
+    const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({})  )})) }));
     const r = i.evalStmt(top, p.parseStatement(' x.y.z = 1; '));
     expect(r).toEqual(null);
-    expect(top.value().x.value.y.value.z).toEqual(a.number(1));
+    expect(top.value().get('x').value.get('y').value.get('z')).toEqual(a.number(1));
 });
 
 test('if statement simple', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; } '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(1));
+    expect(top.value().get('x')).toEqual(a.number(1));
 });
 
 test('if return', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; return x; } '), s.Flags(true, false));
     expect(r).toEqual(['return', a.number(1)]);
 });
 
 test('if break', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; break; } '), s.Flags(false, true));
     expect(r).toEqual(['break']);
 });
 
 test('if continue', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; continue; } '), s.Flags(false, true));
     expect(r).toEqual(['continue']);
 });
 
 test('if else statement', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else { x = -1; } '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(-1));
+    expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('if else if statement', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else if (true) { x = -1; } '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(-1));
+    expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('if else if else statement', () => {
-    const top = s.State(null, { x: a.none(null) });
+    const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else if (false) { x = 2; } else { x = -1; } '));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(-1));
+    expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('while statement', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(10));
+    expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('while statement return', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { return ++x; }'), s.Flags(true, false));
     expect(r).toEqual(['return', a.number(1)]);
 });
 
 test('while statement break simple', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { break; ++x; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(0));
+    expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('while statement break nested', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { while(true) break; ++x; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(10));
+    expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('while statement continue', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; continue; break; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(10));
+    expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('for statement simple', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(9));
+    expect(top.value().get('x')).toEqual(a.number(9));
     // i does not exist on top state.
-    expect(top.value().i).toEqual(undefined);
+    expect(top.value().get('i')).toEqual(undefined);
 });
 
 test('for statement return', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { return i; x = i;}'), s.Flags(true, false));
     expect(r).toEqual(['return', a.number(0)]);
-    expect(top.value().x).toEqual(a.number(0));
+    expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('for statement break', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { break; x = i; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(0));
+    expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('for statement break nested', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { for(j = 0; true; ++j) break; x = i; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(9));
+    expect(top.value().get('x')).toEqual(a.number(9));
 });
 
 test('for statement continue', () => {
-    const top = s.State(null, { x: a.number(0) });
+    const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; continue; --i; }'));
     expect(r).toEqual(null);
-    expect(top.value().x).toEqual(a.number(9));
+    expect(top.value().get('x')).toEqual(a.number(9));
 });

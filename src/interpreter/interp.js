@@ -140,14 +140,10 @@ const builtInFuncs = {
         if (a.isString(iter)) {
             return a.number(iter.value.length);
         }
-        if (!a.isCollection(iter)) {
-            error(`Line ${e.line}: invalid argument type for len(...): '${iter.kind}'.`);
+        if (a.isCollection(iter)) {
+            return a.number(iter.value.size);
         }
-        let c = 0;
-        for(const _ in iter.value) {  
-            ++c;
-        }
-        return a.number(c);
+        error(`Line ${e.line}: invalid argument type for len(...): '${iter.kind}'.`);
     },
     ord: (scope, e) => {
         const args = e.args;
@@ -226,7 +222,12 @@ const builtInFuncs = {
         if (!a.isCollection(c)) {
             error(`Line ${e.line}: invalid argument type for keys(...): '${c.kind}'.`);
         }
-        return a.collection(Object.assign({}, Object.keys(c.value).map(k => a.string(k))));
+        const res = new Map();
+        let i = 0;
+        for (const k of c.value.keys()) {
+            res.set(String(i++), a.string(k));
+        }
+        return a.collection(res);
     },
     print: (scope, e) => {
         const out = scope.out();
@@ -251,9 +252,9 @@ const expressions = {
         return val;
     },
     collection: (scope, e) => {
-        const res = {};
-        for (const [k, v] of Object.entries(e.value) ) {
-            res[k] = evalExpr(scope, v);
+        const res = new Map();
+        for (const [key, value] of Object.entries(e.value) ) {
+            res.set(key, evalExpr(scope, value));
         }
         return a.collection(res);
     },
@@ -280,7 +281,7 @@ const expressions = {
             // error
             error(`Line ${e.line}: invalid collection type for attribute reference '${e.attribute}': '${c.kind}'.`);
         }
-        return c.value[e.attribute] || a.none(null);
+        return c.value.get(e.attribute) || a.none(null);
     },
     subscriptor: (scope, e) => {
         const c = evalExpr(scope, e.collection), attr = evalExpr(scope, e.expr);
@@ -297,7 +298,7 @@ const expressions = {
             }
             error(`Line ${e.line}: invalid collection type for subscriptor '${attr.value}': '${c.kind}'.`);
         }
-        return c.value[String(attr.value)] || a.none(null);
+        return c.value.get(a.strRep(attr)) || a.none(null);
     },
     ternary: (scope, e) => {
         return evalExpr(scope, e.test).value ? evalExpr(scope, e.trueExpr) : evalExpr(scope, e.falseExpr); 
@@ -332,7 +333,7 @@ const expressions = {
         const env = s.newEnv(func);
         // Map paramters to arguments in left-to-right order.
         for (let i = 0; i < args.length; ++i) {
-            env[params[i]] = evalExpr(scope, args[i]);
+            env.set(params[i], evalExpr(scope, args[i]));
         }
         try {
             // Set inFunc flag only.
@@ -375,7 +376,7 @@ const statements = {
         evalExpr(scope, stmt.expr);
         return null;
     },
-        delete:  (scope, stmt, flags) => {
+    delete:  (scope, stmt, flags) => {
         const expr = stmt.expr;
         const attr = determineAttribute(scope, expr);
         if (!attr) {
@@ -385,8 +386,8 @@ const statements = {
         if (!a.isCollection(c)) {
             error(`Line ${stmt.line}: invalid collection type for deletion: '${c.kind}'.`);
         }
-        if (attr in c.value) {
-            delete c.value[attr];
+        if (c.value.has(attr)) {
+            c.value.delete(attr);
         } else {
             error(`Line ${stmt.line}: unknown attribute reference for deletion: '${attr}'.`);
         }
@@ -551,7 +552,7 @@ const assignVal = (scope, e, v) => {
         error(`Line ${e.line}: invalid collection type for attribute assignment '${attr}': '${c.kind}'.`);
     }
     // Assign value in collection.
-    c.value[attr] = v;
+    c.value.set(attr, v);
     return v;
 }
 
