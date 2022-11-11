@@ -373,10 +373,10 @@ test('string single quotes', () => {
 })
 
 test('string double quotes', () => {
-    let r = parseProgram(' a = "string1 () => 1; lkd//rd;dg;ad_0qlkfgfhjo";');
+    let r = parseProgram(' a = "string1 () => 1; lkd#rd;dg;ad_0qlkfgfhjo";');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.assignment([a.identifier('a', 1)], a.string('string1 () => 1; lkd//rd;dg;ad_0qlkfgfhjo', 1))
+        a.assignment([a.identifier('a', 1)], a.string('string1 () => 1; lkd#rd;dg;ad_0qlkfgfhjo', 1))
     ]);
 })
 
@@ -469,10 +469,10 @@ test('leading space in program', () => {
 });
 
 test('semicolons and whitespace in program', () => {
-    let r = parseProgram('   ;;;;;;;;;;;   ; ;   x      =     1;  ;;;;;;;;;;; ;;;;;;;;;; ');
+    let r = parseProgram('   ;;;\n;;;;;;;;   ; ;\n   x      =     1;  ;;;\n;;;;;;;;\n ; #x = 1; #\n\n ');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.assignment([a.identifier('x', 1)], a.number('1', 1))
+        a.assignment([a.identifier('x', 3)], a.number('1', 3))
     ]);
 });
 

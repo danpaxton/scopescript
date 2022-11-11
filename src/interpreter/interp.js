@@ -127,14 +127,14 @@ const builtInFuncs = {
     type: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: type(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: type(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.string(evalExpr(scope, args[0]).kind);
     },
     len: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: len(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: len(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         const iter = evalExpr(scope, args[0]);
         if (a.isString(iter)) {
@@ -143,84 +143,84 @@ const builtInFuncs = {
         if (a.isCollection(iter)) {
             return a.number(iter.value.size);
         }
-        error(`Line ${e.line}: invalid argument type for len(...): '${iter.kind}'.`);
+        error(`Line ${e.line}: invalid argument type for len(..): '${iter.kind}'.`);
     },
     ord: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: ord(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: ord(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         const char = evalExpr(scope, args[0]);
         if (!a.isString(char)) {
-            error(`Line ${e.line}: invalid argument type for ord(...): '${char.kind}'.`);
+            error(`Line ${e.line}: invalid argument type for ord(..): '${char.kind}'.`);
         }
         if (char.value.length !== 1) {
-            error(`Line ${e.line}: ord(...) expected a character: Received a string of size ${char.value.length}.`);
+            error(`Line ${e.line}: ord(..) expected a character: Received a string of size ${char.value.length}.`);
         }
         return a.number(char.value.charCodeAt(0));
     },
     abs: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: abs(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: abs(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         const num = evalExpr(scope, args[0]);
         if (!a.isNumber(num)) {
-            error(`Line ${e.line}: invalid argument type for abs(...): '${num.kind}'.`);
+            error(`Line ${e.line}: invalid argument type for abs(..): '${num.kind}'.`);
         }
         return a.number(Math.abs(num.value));
     },
     pow: (scope, e) => {
         const args = e.args;
         if (args.length !== 2) {
-            error(`Line ${e.line}: pow(...) takes exactly 2 arguments: Received ${args.length}.`);
+            error(`Line ${e.line}: pow(..) takes exactly 2 arguments: Received ${args.length}.`);
         }
         const b = evalExpr(scope, args[0]), p = evalExpr(scope, args[1]);
         if (!a.areNumbers(b, p)) {
-            error(`Line ${e.line}: invalid argument type(s) for pow(...): '${b.kind}' and '${p.kind}'.`);
+            error(`Line ${e.line}: invalid argument type(s) for pow(..): '${b.kind}' and '${p.kind}'.`);
         }
         return a.number(Math.pow(b.value, p.value));
     },
     bool: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: bool(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: bool(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.boolean(Boolean(evalExpr(scope, args[0]).value));
     },
     num: (scope, e) => {
         const args = e.args;
         if (args.length !== 1) {
-            error(`Line ${e.line}: num(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: num(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         const num = evalExpr(scope, args[0]);
         if (a.isString(num)) {
             const val = Number(num.value);
             if (Number.isNaN(val)) {
-                error(`Line ${e.line}: invalid literal for num(...): '${num.value}'.`);
+                error(`Line ${e.line}: invalid literal for num(..): '${num.value}'.`);
             }
             return a.number(val);
         }
         if (!a.isNumber(num)) {
-            error(`Line ${e.line}: invalid argument type for num(...): '${num.kind}'.`);
+            error(`Line ${e.line}: invalid argument type for num(..): '${num.kind}'.`);
         }
         return a.number(Number(num.value));
     },
     str: (scope, e) => {
         const args = e.args;
         if (args.length != 1) {
-            error(`Line ${e.line}: str(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: str(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         return a.string(a.strRep(evalExpr(scope, args[0])));
     },
     keys: (scope, e) => {
         const args = e.args;
         if (args.length != 1) {
-            error(`Line ${e.line}: keys(...) takes exactly 1 argument: Received ${args.length}.`);
+            error(`Line ${e.line}: keys(..) takes exactly 1 argument: Received ${args.length}.`);
         }
         const c = evalExpr(scope, args[0]);
         if (!a.isCollection(c)) {
-            error(`Line ${e.line}: invalid argument type for keys(...): '${c.kind}'.`);
+            error(`Line ${e.line}: invalid argument type for keys(..): '${c.kind}'.`);
         }
         const res = new Map();
         let i = 0;
@@ -315,19 +315,19 @@ const expressions = {
             } else if (name in builtInFuncs) {
                 return builtInFuncs[name](scope, e);
             } else {
-                error(`Line ${e.line}: function ${name}(...) is not defined.`);
+                error(`Line ${e.line}: function ${name}(..) is not defined.`);
             }
         } else {
             // Anonymous function.
             funcExpr = evalExpr(scope, f);
         }
         if (!a.isClosure(funcExpr)) {
-            error(`Line ${e.line}: invalid type for function call: ${funcExpr.kind}`);
+            error(`Line ${e.line}: invalid type for function call: '${funcExpr.kind}'`);
         }
         const func = funcExpr.value;
         const params = func.params(), args = e.args;
         if (params.length !== args.length) {
-            error(`Line ${e.line}: invalid argument count for ${name}(...): Expected ${params.length}.`);
+            error(`Line ${e.line}: invalid argument count for ${name}(..): Expected ${params.length}.`);
         }
         // Create new function environent.
         const env = s.newEnv(func);
@@ -343,7 +343,7 @@ const expressions = {
         } catch (excep) {
             // Recursion Error.
             if (excep instanceof RangeError) {
-                error(`Line ${e.line}: max recursion-depth exceeded for ${name}(...).`);
+                error(`Line ${e.line}: max recursion-depth exceeded for ${name}(..).`);
             }
             error(excep.message);
         }

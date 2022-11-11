@@ -404,7 +404,7 @@ test('built-in str collection nested', () => {
 
 test('built-in str closure', () => {
     const r = i.evalExpr(s.State(null), p.parseExpression(' str(() => 1) '));
-    expect(r).toEqual(a.string("<closure>"));
+    expect(r).toEqual(a.string("<Closure>"));
 });
 
 test('built-in keys', () => {

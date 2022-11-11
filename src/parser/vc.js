@@ -45,7 +45,7 @@ function vcExpr(boundVars, expression) {
                 if (boundVars.has(x.name) || builtInFuncs.has(x.name)) {
                     return r.foldLeftNoAcc(vcExpr, boundVars, expression.args);
                 } else {
-                    return r.error(`Line ${expression.line}: function ${x.name}(...) is not defined.`)
+                    return r.error(`Line ${expression.line}: function ${x.name}(..) is not defined.`)
                 }
             }
             return vcExpr(boundVars, x)
@@ -58,7 +58,7 @@ function vcExpr(boundVars, expression) {
                     return r.ok(boundVars);
                 }
                 else if(builtInFuncs.has(x.name)) {
-                    return r.error(`Line ${expression.line}: built-in funtion ${x.name}(...) cannot be referenced.`); 
+                    return r.error(`Line ${expression.line}: built-in funtion ${x.name}(..) cannot be referenced.`); 
                 } else {
                     return r.error(`Line ${expression.line}: collection '${x.name}' is not defined.`);                
                 }
@@ -72,7 +72,7 @@ function vcExpr(boundVars, expression) {
                     return vcExpr(boundVars, expression.expr);
                 }
                 else if(builtInFuncs.has(x.name)) {
-                    return r.error(`Line ${expression.line}: built-in funtion ${x.name}(...) is not subscriptable.`) 
+                    return r.error(`Line ${expression.line}: built-in funtion ${x.name}(..) is not subscriptable.`) 
                 }
                 else {
                     return r.error(`Line ${expression.line}: collection '${x.name}' is not defined.`);                
@@ -177,7 +177,7 @@ function vcStmt(env, stmt) {
         case 'delete': {
             const x = stmt.expr
             if (x.kind !== 'subscriptor' && x.kind !== 'attribute') {
-                return r.error(`Line ${x.line}: delete(...) argument must be a collection attribute.`)
+                return r.error(`Line ${x.line}: delete(..) argument must be a collection attribute.`)
             }
             return vcExpr(env, x)
                 .map(_ => env)

@@ -51,7 +51,7 @@ const strRep = (v) => {
     switch(v.kind) {
         case 'none': { return 'none';}
         case 'collection': { return formatCollection(v); }
-        case 'closure': { return "<closure>"; }
+        case 'closure': { return "<Closure>"; }
         default: { return String(v.value) }
     }
 }
