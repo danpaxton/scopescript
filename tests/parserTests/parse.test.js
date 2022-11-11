@@ -10,11 +10,11 @@ test('basic comment', () => {
 });
 
 test('comment mid assignment', () => {
-    let r = parseProgram(`x = #fkals;df//ja;slkdfjlasdf\n 23; # \n print();`)
+    let r = parseProgram(`x = #fkals;df//ja;slkdfjlasdf\n 23; # \n`)
     expect(r.kind).toBe('ok');
-    //expect(r.unsafeGet()).toEqual([
-      //  a.assignment([a.identifier('x', 1)], a.number('23', 2))
-    //]);
+    expect(r.unsafeGet()).toEqual([
+       a.assignment([a.identifier('x', 1)], a.number('23', 2))
+    ]);
 });
 
 test('comment complicated', () => {
@@ -474,6 +474,11 @@ test('semicolons and whitespace in program', () => {
     expect(r.unsafeGet()).toEqual([
         a.assignment([a.identifier('x', 3)], a.number('1', 3))
     ]);
+});
+
+test('semicolons in program', () => {
+    let r = parseProgram('# x = 1; \n # x = 1; \n # x = 1;');
+    expect(r.kind).toBe('ok');
 });
 
 test('leading white space in expression', () => {

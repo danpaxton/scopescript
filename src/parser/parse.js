@@ -10,13 +10,13 @@ const { error } = require("./result");
 const vc = require("./vc");
 
 //Parser to match comment
-const comment = P.regex(/#.*/).wrap(P.optWhitespace, P.optWhitespace);
+const comment = P.regex(/#.*/).wrap(P.optWhitespace, P.optWhitespace).atLeast(1);
 
 // Parser to match optional whitespace.
 const ws = comment.or(P.optWhitespace);
 
 // Parser to match whitespace.
-const ws1 = P.whitespace.then(ws)
+const ws1 = comment.or(P.whitespace);
 
 // Parser that retrieves line number. 
 const lineNum = P.index.map(obj => obj.line);
@@ -298,7 +298,7 @@ exports.parseStatement = parseStatement;
 
 // parseProgram(input: String): Ok | Error
 const parseProgram = input => {
-    const result = ws.then(semiColon).then(stmt.many()).skip(ws).parse(input);
+    const result = ws.then(semiColon).then(stmt.many()).skip(P.end).parse(input);
     if (result.status) {
         const stmts = result.value;
         return vc.vc(stmts).map(_ => stmts);
