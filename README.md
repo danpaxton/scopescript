@@ -57,7 +57,7 @@ Below is a set of instructions that define valid statements and expressions for 
 ### Lexical
 `type boolean ::= true | false`<br>
 
-`type number ::= /[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/ | Infinity | -Infinity `<br>
+`type number ::= /([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/ | Infinity`<br>
 
 `type string ::= /(['"])(\1|(.(?!\1))*.\1)/s`<br>
 
@@ -139,7 +139,7 @@ Numbers are represented as integers, or floats.<br>
 Examples,<br>
 `1`, integer number.<br>
 
-`-3.66`, float number.<br>
+`.66`, float number.<br>
 
 `2.67e-100`, scientific notation.<br>
 
@@ -317,7 +317,7 @@ Parse error,<br>
 Conditionally make decisions on the statement level. Defined by a series of tests with associated parts, and finally a false part.<br>
 
 Syntax,<br>
-`if( test ) { part } else if ( test ) { part } ... else { false part }`<br>
+`if( test ) { part } elif ( test ) { part } ... else { false part }`<br>
 
 `if` statements require brackets for more than one statement.<br>
 
@@ -328,10 +328,10 @@ if else,<br>
 `if(true) { 1 + 2; } else { 1 + 2; }`<br>
 
 if else-if,<br>
-`if(true) { 1 + 2; } else if(true) { 1 + 2; }`<br>
+`if(true) { 1 + 2; } elif(true) { 1 + 2; }`<br>
 
 if else-if else,<br>
-`if(true) { 1 + 2; } else if (true) { 1 + 2; } else { 1 + 2; }`<br>
+`if(true) { 1 + 2; } elif(true) { 1 + 2; } else { 1 + 2; }`<br>
 
 
 ## `while` statement
