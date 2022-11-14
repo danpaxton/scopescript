@@ -86,12 +86,12 @@ test('pre-decrement', () => {
 });
 
 test('unary plus', () => {
-    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(1)})), p.parseExpression('+x'));
+    const r = i.evalExpr(s.State(null), p.parseExpression('+1'));
     expect(r).toEqual(a.number(1));
 });
 
 test('unary minus', () => {
-    const r = i.evalExpr(s.State(null, toMap({ 'x': a.number(1)})), p.parseExpression('-x'));
+    const r = i.evalExpr(s.State(null), p.parseExpression('-1'));
     expect(r).toEqual(a.number(-1));
 });
 
@@ -562,16 +562,16 @@ test('if else statement', () => {
     expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
-test('if else if statement', () => {
+test('if elif statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else if (true) { x = -1; } '));
+    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (true) { x = -1; } '));
     expect(r).toEqual(null);
     expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
-test('if else if else statement', () => {
+test('if elif else statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else if (false) { x = 2; } else { x = -1; } '));
+    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (false) { x = 2; } else { x = -1; } '));
     expect(r).toEqual(null);
     expect(top.value().get('x')).toEqual(a.number(-1));
 });

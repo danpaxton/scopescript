@@ -35,8 +35,8 @@ const semiColon = operator(';').many();
 
 // parseOp(ops: String[]): Parser<String>
 const parseOp = ops => {
-    const find = (arr, i) => (i >= ops.length) ? P.fail('') : token(arr[i]).or(find(arr, i + 1));
-    return find(ops, 0); 
+    const find = i => (i >= ops.length) ? P.fail('') : token(ops[i]).or(find(i + 1));
+    return find(0); 
 }
 
 // getOp(ops: String[]): String
@@ -81,11 +81,11 @@ const ternaryMatch = otherParser => {
 }
 
 // Matches numbers and infinity.
-const numMatch = P.alt(P.regexp(/[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/), P.string('Infinity'), P.string('-Infinity'))
+const numMatch = P.alt(P.regexp(/([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/), P.string('Infinity'))
     .desc('number').skip(ws);
 
 // Matches strings.
-const stringMatch = P.regex(/(['"])(\1|(.(?!\1))*.\1)/s).desc('string').map(str => str.slice(1, str.length - 1)).skip(ws);
+const stringMatch = P.regex(/(['"])(\1|(.(?!\1))*.\1)/).desc('string').map(str => str.slice(1, str.length - 1)).skip(ws);
 
 // Parser that matches a number as a string (+ or -) in range [0-9] 1 or more times and then maps to an ast number.
 const num = lineNum.chain(line => numMatch.map(str => a.number(str, line)));
@@ -100,7 +100,7 @@ const bool = lineNum.chain(line => P.string('true').map(_ => true).or(P.string('
 const none = lineNum.chain(line => P.string('none').desc('none').skip(ws).map(_ => a.none(line)));
 
 // Parser that matches a identifier character (upper or lower case) 0 or more times.
-const special = new Set(['if', 'else', 'for', 'while', 'return', 'break', 'continue', 'delete', 'none']);
+const special = new Set(['if', 'elif', 'else', 'for', 'while', 'return', 'break', 'continue', 'delete', 'none']);
 const name = P.regexp(/[a-zA-Z_$][a-zA-Z_$0-9]*/).assert(name => !special.has(name)).desc('identifier').skip(ws);
 
 // Parser that matches a closure and then maps parameters, and body to a an ast closure.
@@ -109,7 +109,7 @@ const closure = P.lazy(() => lineNum.chain(line => name.sepBy(operator(',')).wra
 
 // Parser that mathces a collection and maps all key value pairs to an ast collection.
 const collection = P.lazy(() => lineNum.chain(line => 
-    P.seq(P.alt(stringMatch, numMatch, name).skip(operator(':')), expr).sepBy(operator(','))
+    P.seq(P.alt(stringMatch, name, numMatch.map(num => String(Number(num)))).skip(operator(':')), expr).sepBy(operator(','))
     .wrap(operator('{'), operator('}')).desc('collection').skip(ws)
     .map(pairs => a.collection(pairs.reduce((acc, e) =>  {
         acc[e[0]] = e[1];
@@ -131,16 +131,16 @@ const atom = ws.then(string
 // call_reference_subscription: AST Call | attribute | Subscriptor 
 const call_attr_sub = P.lazy(() => lineNum.chain(line => atom.chain(lhs => 
     P.alt(P.seqObj(['call', expr.sepBy(operator(',')).wrap(operator('('), operator(')'))])
-        , P.seqObj(['attribute', token('.').then(name)])
-        , P.seqObj(['subscriptor', expr.wrap(operator('['), operator(']'))])).many().map(seqObj => 
+        , P.seqObj(['attr', token('.').then(name)])
+        , P.seqObj(['sub', expr.wrap(operator('['), operator(']'))])).many().map(seqObj => 
             seqObj.reduce((acc, currVal) => {
                 if (currVal.call !== undefined) {
                     return a.call(acc, currVal.call, line);
                 }
-                else if(currVal.attribute !== undefined) {
-                    return a.attribute(acc, currVal.attribute, line);
+                else if(currVal.attr !== undefined) {
+                    return a.attribute(acc, currVal.attr, line);
                 } else {
-                    return a.subscriptor(acc, currVal.subscriptor, line);
+                    return a.subscriptor(acc, currVal.sub, line);
                 }
             }, lhs))))) 
 
@@ -234,8 +234,8 @@ const forStmt = P.lazy(() => token('for').skip(operator('('))
 
 // ifStmt: AST If
 const ifStmt = P.lazy(() => P.seqObj(['test', token('if').then(expr.wrap(operator('('), operator(')')))], ['part', block]) // initial if statement
-    .chain(ifStmt => P.seqObj(['test', token('else if').then(expr.wrap(operator('('), operator(')')))], ['part', block]).many() // else if array
-    .map(elifArr => (elifArr.unshift(ifStmt), elifArr))).chain(truePartArr => token('else') // combine initial if with else if array
+    .chain(ifStmt => P.seqObj(['test', token('elif').then(expr.wrap(operator('('), operator(')')))], ['part', block]).many() // else if array
+    .map(elifArr => (elifArr.unshift(ifStmt), elifArr))).chain(truePartArr => token('else') // combine initial if with elif array
     .then(block).fallback([]).map(falsePart => a.if_(truePartArr, falsePart))).skip(semiColon)) // else part if it exists
 
 

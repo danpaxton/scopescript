@@ -11,7 +11,7 @@ test('compound assignments require defined variables', () => {
 });
 
 test('cannot use variables defined within other blocks', () => {
-    let r = parseProgram('if (true) { x = 0; } else if(true) { x += 1; }');
+    let r = parseProgram('if (true) { x = 0; } elif(true) { x += 1; }');
     expect(r.kind).toBe('error');
     r = parseProgram('if (true) { x = 0; } else { x += 1; }');
     expect(r.kind).toBe('error');
@@ -22,7 +22,7 @@ test('cannot use variables defined within other blocks', () => {
 });
 
 test('cannot use variables defined within blocks', () => {
-    let r = parseProgram('if (true) { x = 0; } else if (true) { x = 1; ) else { x = 4; } while(true) { x = 0; } for(x = 0; x < true; x += 1) { x = 2; } x = x + 1;');
+    let r = parseProgram('if (true) { x = 0; } elif (true) { x = 1; ) else { x = 4; } while(true) { x = 0; } for(x = 0; x < true; x += 1) { x = 2; } x = x + 1;');
     expect(r.kind).toBe('error');
 });
 

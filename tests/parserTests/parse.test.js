@@ -95,8 +95,8 @@ test('if else', () => {
 });
 
 
-test('if else if, no else', () => {
-    let r = parseProgram('x = 10; if (x) {x = 2;} else if(x) { x = 4; }');
+test('if elif, no else', () => {
+    let r = parseProgram('x = 10; if (x) {x = 2;} elif(x) { x = 4; }');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
         a.assignment([a.identifier('x', 1)], a.number('10', 1)),
@@ -105,8 +105,8 @@ test('if else if, no else', () => {
     ]);
 });
 
-test('if else if else', () => {
-    let r = parseProgram('x = 10; if (x) { x = 2; } else if(x) { x = 8; } else if(x) { x = 4; } else { x = 1; }');
+test('if elif else', () => {
+    let r = parseProgram('x = 10; if (x) { x = 2; } elif(x) { x = 8; } elif(x) { x = 4; } else { x = 1; }');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
         a.assignment([a.identifier('x', 1)], a.number('10', 1)),
@@ -117,8 +117,8 @@ test('if else if else', () => {
     ]);
 });
 
-test('need if before else if', () => {
-    let r = parseProgram('x = 10; else if(x) { x = 1; }');
+test('need if before elif', () => {
+    let r = parseProgram('x = 10; elif(x) { x = 1; }');
     expect(r.kind).toBe('error');
 });
 
@@ -128,7 +128,7 @@ test('need if before else', () => {
 });
 
 test('if no brackets', () => {
-    let r = parseProgram('if (1) 1; else if(1) 1; else 1;')
+    let r = parseProgram('if (1) 1; elif(1) 1; else 1;')
     expect(r.kind).toBe('ok')
     expect(r.unsafeGet()).toEqual([
         a.if_([{test: a.number('1', 1), part: [a.static_(a.number('1', 1))] },
@@ -294,7 +294,7 @@ test('negative integer number', () => {
     let r = parseProgram('-2395;');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.static_(a.number('-2395', 1))
+        a.static_(a.unop('-', a.number('2395', 1), 1))
     ]);
 })
 
@@ -339,7 +339,7 @@ test('negative infinity', () => {
     let r = parseProgram('-Infinity;');
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.static_(a.number('-Infinity', 1))
+        a.static_(a.unop('-', a.number('Infinity', 1), 1))
     ]);
 })
 
@@ -390,10 +390,10 @@ test('string space', () => {
 })
 
 test('string newline', () => {
-    let r = parseProgram(" a = '\n';");
+    let r = parseProgram(" a = '\\n';");
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.assignment([a.identifier('a', 1)], a.string('\n', 1))
+        a.assignment([a.identifier('a', 1)], a.string('\\n', 1))
     ]);
 })
 
@@ -690,7 +690,7 @@ test('Built in call', () => {
     let r = parseProgram('foo = abs(-1);')
     expect(r.kind).toBe('ok');
     expect(r.unsafeGet()).toEqual([
-        a.assignment([a.identifier('foo', 1)], a.call(a.variable('abs', 1), [a.number('-1', 1)], 1))
+        a.assignment([a.identifier('foo', 1)], a.call(a.variable('abs', 1), [a.unop('-', a.number('1', 1), 1)], 1))
     ])
 })
 
@@ -745,10 +745,18 @@ test('trivial collection empty', () => {
 });
 
 test('trivial collection', () => {
-    let r = parseProgram('x = { a: true, b: 23, c : {} };');
+    let r = parseProgram('x = { a: true, b: 23, 1e1 : {} };');
     expect(r.kind).toBe('ok')
     expect(r.unsafeGet()).toEqual([
-        a.assignment([a.identifier('x', 1)], a.collection({'a': a.bool(true, 1), 'b': a.number('23', 1), 'c': a.collection({ }, 1)}, 1))
+        a.assignment([a.identifier('x', 1)], a.collection({'a': a.bool(true, 1), 'b': a.number('23', 1), 10: a.collection({ }, 1)}, 1))
+    ])
+});
+
+test('trivial collection number properties', () => {
+    let r = parseProgram('x = { 1: true, 1e-1: 23, 2.0: {} };');
+    expect(r.kind).toBe('ok')
+    expect(r.unsafeGet()).toEqual([
+        a.assignment([a.identifier('x', 1)], a.collection({'1': a.bool(true, 1), '0.1': a.number('23', 1), '2': a.collection({ }, 1)}, 1))
     ])
 });
 
