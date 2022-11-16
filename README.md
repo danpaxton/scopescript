@@ -11,7 +11,7 @@ The interpreter is built using a network of JavaScript objects that map a 'kind'
 Program scope is represented as a linked list of states. Each state is represented as an object with value, parent, and out attributes. The 'value' attribute points to a map containing the state's local variables and their values. The 'parent' attribute points to the outer-state relative to itself. Lastly, the 'out' attribute points to the program output list. New states are added to the scope when the program enters a different code block (i.e. if, while, for, and function blocks). Variable look up starts in the current state and follows parents pointers to find variables that are global to the current state.
 
 ## Closures
-Closures are represented as an object with params, body, parent and env attributes. The 'params' attribute stores a list of strings that represent each parameter. The 'body' attribute stores a block of code to be executed on call. The 'parent' attribute maintains a link to it's creating state at closure creation time. Lastly, the 'env' attribute is a stack that tracks the most recently made call environment. Variable look up during a function call follows the closure's lexical environment, not the current scope at call time.
+Closures are represented as an object with params, body, parent and env attributes. The 'params' attribute stores a list of strings that represent each parameter. The 'body' attribute stores a block of code to be executed on call. The 'parent' attribute maintains a link to it's creating state at closure creation time. Lastly, the 'env' attribute is a stack that tracks the most recently made call environment. Variable look up during a function call follows the closure's lexical environment, not the current program scope at call time.
 <br> 
 **At any point in the program, the only variables that can be referenced must be on the path from the current state to the outermost state. (i.e variables must be in scope)**
 
@@ -118,14 +118,14 @@ Example,<br>
 
 Uknown attribute reference returns none.<br>
 Given `a = {}`, <br>
-`a[1] == none` is equivalent to `True`.<br>
+`a[1] == none` is equivalent to `true`.<br>
 
 
 ## Boolean
 Boolean values are represented using `true` or `false`.<br>
 
 Example,<br>
-`a = true`, true assignment.<br>
+`a = true;`, true assignment.<br>
 `if (false) { ... }`, conditional test.
 
 boolean values are a subset of number values.<br>
@@ -359,7 +359,7 @@ Initializers must be assignments and update variables must be defined.<br>
 Example,<br>
 `for(i = 0; i < 10; ++i) 2 + i;`<br>
 
-`for(i = 0, j = z = 1; i < 10; ++i, ++z, --j) { z += j; j += i}`<br>
+`for(i = 0, j = z = 1; i < 10; ++i, ++z, --j) { z += j; j += i; }`<br>
 
 Errors,<br>
 
