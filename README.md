@@ -59,7 +59,7 @@ Below is a set of instructions that define valid statements and expressions for 
 
 `type number ::= /([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?/ | Infinity`<br>
 
-`type string ::= /(['"])(\1|(.(?!\1))*.\1)/s`<br>
+`type string ::= /(['"])(\1|(.(?!\1))*.\1)/`<br>
 
 `type name ::= /[a-zA-Z_$][a-zA-Z_$0-9]*/`<br>
 
