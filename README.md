@@ -466,7 +466,7 @@ binarySearch = (arr, t) => {
    if (arr[mid] == t) {
      return steps;
    } elif (arr[mid] > t) {
-     right = mid + 1;
+     right = mid - 1;
    } else {
      left = mid + 1;
    }
