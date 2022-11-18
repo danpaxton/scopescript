@@ -417,3 +417,84 @@ Syntax,<br>
 Example,<br>
 `while(true) { break; print(1);}`<br>
 The loop will only run once and nothing will be printed because it breaks immediately.
+
+## Example programs
+Creates ranges of numbers using a linked list.
+``` 
+# Returns a function that creates a range.
+RangeMaker = () => {
+  empty = () => {  
+    toString: () => ')',
+    map: f => empty()
+  };
+  node = (v, n) => { 
+    val: () => v, 
+    next: () => n, 
+    toString: () => '(' + str(v) + n.toString(),
+    map: f => node(f(v), n.map(f))
+  };
+  return (start, N) => {
+    maker = n => n < N ? node(n, maker(n + 1)) : empty();
+    return maker(start);
+  };
+};
+
+# Returns a squared range.
+squared = range => range.map(e => pow(e, 2));
+
+Range = RangeMaker();
+
+positive = Range(0, 20);
+negative = Range(-20, 0);
+
+print('Original:');
+print(positive.toString());
+print(negative.toString());
+print();
+print('Squared:');
+print(squared(positive).toString());
+print(squared(negative).toString());
+```
+A program that uses binary search to find a value.
+```
+# Find target using binary search.
+binarySearch = (arr, t) => {
+  left = 0; right = len(arr) - 1;
+  steps = 0;
+  while(left < right) {
+   mid = left + (right - left) // 2;
+   if (arr[mid] == t) {
+     return steps;
+   } elif (arr[mid] > t) {
+     right = mid;
+   } else {
+     left = mid;
+   }
+   ++steps;
+  }
+  return -1;
+};
+
+# Iterate over collection to find target.
+findNum = (arr, t) => {
+  for(i = 0; i < len(arr); ++i) {
+    if (arr[i] == t) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+nums = {};
+for(i = 0; i < 20000; ++i) {
+  nums[i] = pow(i, 2);
+}
+
+targetNum = 126023076;
+
+numSteps = findNum(nums, targetNum);
+print("(Iteration) Found target: " + str(targetNum) + " in " + str(numSteps) + " steps." );
+print();
+numSteps = binarySearch(nums, targetNum);
+print("(Binary Search) Found target: " + str(targetNum) + " in " + str(numSteps) + " steps." );
+```
