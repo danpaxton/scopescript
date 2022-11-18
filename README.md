@@ -455,6 +455,15 @@ print('Squared:');
 print(squared(positive).toString());
 print(squared(negative).toString());
 ```
+```
+Original: 
+(0(1(2(3(4(5(6(7(8(9(10(11(12(13(14(15(16(17(18(19) 
+(-20(-19(-18(-17(-16(-15(-14(-13(-12(-11(-10(-9(-8(-7(-6(-5(-4(-3(-2(-1) 
+
+Squared: 
+(0(1(4(9(16(25(36(49(64(81(100(121(144(169(196(225(256(289(324(361) 
+(400(361(324(289(256(225(196(169(144(121(100(81(64(49(36(25(16(9(4(1) 
+```
 A program that uses binary search to find a value.
 ```
 # Find target using binary search.
@@ -497,4 +506,9 @@ print("(Iteration) Found target: " + str(targetNum) + " in " + str(numSteps) + "
 print();
 numSteps = binarySearch(nums, targetNum);
 print("(Binary Search) Found target: " + str(targetNum) + " in " + str(numSteps) + " steps." );
+```
+```
+(Iteration) Found target: 126023076 in 11226 steps. 
+
+(Binary Search) Found target: 126023076 in 12 steps. 
 ```
