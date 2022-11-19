@@ -470,7 +470,7 @@ A program that uses binary search to find a value.
 binarySearch = (arr, t) => {
   left = 0; right = len(arr) - 1;
   steps = 0;
-  while(left < right) {
+  while(left <= right) {
    mid = left + (right - left) // 2;
    if (arr[mid] == t) {
      return steps;
