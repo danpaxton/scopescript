@@ -218,41 +218,11 @@ Built in functions with default return values unless overwritten.<br>
 
 `print(.. , ...)`, displays arguments seperated by a space, and then a newline to output.<br>
 
-## Assignment statement
-Assign a variable, or a collection attribute to an expression.<br>
-
-Syntax,<br>
-`x = expression;`<br>
-`x.attribute = expression;`<br>
-`x[...] = expression;`
-
-### Basic assignment
-Example,<br>
-`a = 1;`<br>
-
-Assign multiple variables, or attributes the same value using an assignment chain.<br>
-`a = b['key'] = c.val = 1;`<br>
-
-### Compound assignment
-`'+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|='`<br>
-
-A variable must be defined before compound assignment.<br>
-
-Example,
-`a = 1; a += 1;`<br>
-
-A compound assigment and the equivalent simple assignment will be parsed into the same result.<br>
-`a += 1;` is the same as `a = a + 1;`<br>
-
-Assignment types cannot be mixed.<br>
-`a = b += 1;` will result in a parse error.
-
-
 ## Closures
 Store parameters, function code, and a link to lexical environment.<br>
 
 Syntax, <br>
-`( expression, ..., expression ) => expression; | { body }`
+`( expression, ..., expression ) => expression | { body }`
 
 No parameters,<br>
 `foo = () => { message = 'Hello'; return message; }; foo();`
@@ -306,7 +276,7 @@ using `data[' ']` and attribute `key` using `data.key` or `data['key']`.<br>
 Conditionally make decisions on the expression level. Defined by a test with a true expression and a false expression.<br>
 
 Syntax,<br>
-`a = test ? true expression : false expression;`
+`test ? true expression : false expression`
 
 Ternary expressions can only contain expressions, use if statements for statement level conditionals.<br>
 
@@ -317,6 +287,35 @@ Example,<br>
 
 Parse error,<br>
 `a = test1 ? test2 ? 1 : 3 : 2;`
+
+## Assignment statement
+Assign a variable, or a collection attribute to an expression.<br>
+
+Syntax,<br>
+`x = expression;`<br>
+`x.attribute = expression;`<br>
+`x[...] = expression;`
+
+### Basic assignment
+Example,<br>
+`a = 1;`<br>
+
+Assign multiple variables, or attributes the same value using an assignment chain.<br>
+`a = b['key'] = c.val = 1;`<br>
+
+### Compound assignment
+`'+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|='`<br>
+
+A variable must be defined before compound assignment.<br>
+
+Example,
+`a = 1; a += 1;`<br>
+
+A compound assigment and the equivalent simple assignment will be parsed into the same result.<br>
+`a += 1;` is the same as `a = a + 1;`<br>
+
+Assignment types cannot be mixed.<br>
+`a = b += 1;` will result in a parse error.
 
 
 ## `if` statement
