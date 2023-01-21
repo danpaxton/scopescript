@@ -338,8 +338,8 @@ const expressions = {
         try {
             // Set inFunc flag only.
             // Execute function body in it's own enviroment. Return none if no return value.
-            const res = evalBlock(s.getEnv(func), func.body(), s.Flags(true, false));
-            return res ? res[1] : a.none(null);
+            const { kind, value } = evalBlock(s.getEnv(func), func.body(), s.Flags(true, false));
+            return kind == 'return' ? value : a.none(null);
         } catch (excep) {
             // Recursion Error.
             if (excep instanceof RangeError) {
@@ -351,30 +351,29 @@ const expressions = {
 }
 
 const statements = {
+    break: (scope, stmt, flags) => {
+        if (!flags.inLoop()) {
+            error(`Line ${stmt.line}: break outside of loop.`);
+        }
+        // Break has value.
+        return { kind: 'break', hasValue: true, value: a.none(null) }
+    },
+    continue: (scope, stmt, flags) => {
+        if (!flags.inLoop()) {
+            error(`Line ${stmt.line}: continue outside of loop.`);
+        }
+        // Continue has value.
+        return { kind: 'continue', hasValue: true, value: a.none(null)  }
+    },
     return: (scope, stmt, flags) => {
         if (!flags.inFunc()) {
             error(`Line ${stmt.line}: return outside of function.`);
         }
         // Return has value.
-        return ['return', evalExpr(scope, stmt.expr)];
-    },
-    break: (scope, stmt, flags) => {
-        if (!flags.inLoop()) {
-            error(`Line ${stmt.line}: break outside of loop.`);
-        }
-        // Break has no value.
-        return ['break'];
-    },
-    continue: (scope, stmt, flags) => {a
-        if (!flags.inLoop()) {
-            error(`Line ${stmt.line}: continue outside of loop.`);
-        }
-        // Continue has no value.
-        return ['continue'];
+        return { kind: 'return', hasValue: true, value: evalExpr(scope, stmt.expr) };
     },
     static: (scope, stmt, flags) => {
-        evalExpr(scope, stmt.expr);
-        return null;
+        return { kind: 'static', hasValue: false, value: evalExpr(scope, stmt.expr) }
     },
     delete:  (scope, stmt, flags) => {
         const expr = stmt.expr;
@@ -391,7 +390,7 @@ const statements = {
         } else {
             error(`Line ${stmt.line}: unknown attribute reference for deletion: '${attr}'.`);
         }
-        return null;
+        return { kind: 'delete', hasValue: false, value: a.none(null) };
     },
     assignment: (scope, stmt, flags) => {
         const val = evalExpr(scope, stmt.expr);
@@ -401,7 +400,7 @@ const statements = {
                 error(`Line ${e.line}: invalid assignment type: '${e.kind}'.`);
             }
         }
-        return null;
+        return { kind: 'assignment', hasValue: false, value: val };
     },
     if: (scope, stmt, flags) => {
         const newScope = s.childState(scope);
@@ -420,20 +419,19 @@ const statements = {
         const newScope = s.childState(scope);
         // Set inLoop flag, and maintain inFunc flag.
         const newFlags = s.Flags(flags.inFunc(), true);
+
         let res;
         while (evalExpr(scope, stmt.test).value) {
             res = evalBlock(newScope, stmt.body, newFlags);
-            if (res) {
-                if (res[0] === 'return') {
-                    return res;
-                }
-                if (res[0] === 'break') {
-                    return null;
-                }
-                // if (res[0] === 'continue' ) ...
+            if (res.kind == 'return') {
+                return res;
+            }
+            if (res.kind == 'break') {
+                res.hasValue = false;
+                return res;
             }
         }
-        return null;
+        return res;
     },
     for: (scope, stmt, flags) => {
         // Create new scope.
@@ -447,21 +445,18 @@ const statements = {
         let res;
         while(evalExpr(newScope, stmt.test).value) {
             res = evalBlock(newScope, stmt.body, newFlags);
-            if (res) {
-                if (res[0] === 'return') {
-                    return res;
-                }
-                if (res[0] === 'break') {
-                    return null;
-                }
-                // if (res[0] === 'continue' ) ...
+            if (res.kind == 'return') {
+                return res
             }
-            // Loop updates.
+            if (res.kind == 'break') {
+                res.hasValue = false;
+                return res;
+            }
             for (const update of stmt.updates) {
                 evalStmt(newScope, update);
             }
         }
-        return null;
+        return res;
     }
 };
 
@@ -478,7 +473,7 @@ const evalExpr = (scope, expr) => {
 };
 exports.evalExpr = evalExpr;
 
-// evalStmt(flags: Flags, scope: State, stmt: Statement): Atom | null
+// evalStmt(flags: Flags, scope: State, stmt: Statement): Stmt
 const evalStmt = (scope, stmt, flags = s.Flags(false, false)) => {
     const kind = stmt.kind;
     if (kind in statements) {
@@ -490,30 +485,29 @@ exports.evalStmt = evalStmt;
 
 // evalBlock(flags: Flags, scope: State, stmts: Statements[]): Atom | null
 const evalBlock = (scope, stmts, flags) => {
+    let res = { kind: 'empty', hasValue: false, value: a.none(null) }
     for (const stmt of stmts) {
-        const retVal = evalStmt(scope, stmt, flags);
-        if (retVal) {
-            return retVal;
+        res = evalStmt(scope, stmt, flags);
+        if (res.hasValue) {
+            break;
         }
     }
-    return null;
+    return res;
 }
 exports.evalBlock = evalBlock;
 
-// interpProgram(program: Program): { kind: String, out: String[] }
+// interpProgram(program: Program): { kind: String, out: String[], last: String}
 const interpProgram = (program) => {
     if (program.kind === 'ok') {
         try {
             const top = s.State(null);
-            for (const stmt of program.value) {
-                evalStmt(top, stmt);
-            }
-            return { kind: 'ok', out: top.out() };
+            const r = evalBlock(top, program.value);
+            return { kind: 'ok', out: top.out(), last: a.strRep(r.value) };
         } catch (e) {
-            return { kind: 'error', out: [e.message] };
+            return { kind: 'error', out: [e.message], last: 'none' };
         }
     } else {
-        return { kind: 'error', out: [program.message] };
+        return { kind: 'error', out: [program.message], last: 'none' };
     }
 };
 exports.interpProgram = interpProgram;

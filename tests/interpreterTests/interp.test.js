@@ -282,52 +282,52 @@ test('ternary falseExpr', () => {
 
 test('call simple', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = () => 1; return x();').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('tracks only enumerable properties', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('toString = () => 1; if (true){ return toString(); }').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('call in-place', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('return (() => 1)();').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('call one argument', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a) => a; return x(1);').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('call arguments override global variables', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('a = -1; x = (a) => a; return x(1);').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('call more than one argument', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a, b) => a + b; return x(2, 3);').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(5)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(5) });
 });
 
 test('call recursive', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a) => a < 100 ? x(a + 1) : a; return x(0);').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(100)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(100) });
 });
 
 test('call curry', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = a => b => c => a + b + c; return x(1)(2)(3);').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(6)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(6) });
 });
 
 test('call closure simple', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = a => () => ++a; b = x(0); return b() + b();').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(3)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(3) });
 });
 
 test('recursive closure creation', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (v , n) => { val: () => v, next: () => n }; list = x(-5, x(5, none)); return list.val() + list.next().val();').value, s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(0)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(0) });
 });
 
 // Built-in function tests.
@@ -457,53 +457,62 @@ test('named functions override built-in functions', () => {
 
 test('static test', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' 1; '));
-    expect(r).toEqual(null);
+    expect(r).toEqual({ kind: 'static', hasValue: false, value: a.number(1) });
 });
 
 test('return statement', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' return 1; '), s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('break statement', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' break; '), s.Flags(false, true));
-    expect(r).toEqual(['break']);
+    expect(r).toEqual({ kind: 'break', hasValue: true, value: a.none(null) });
 });
 
-test('continue statement', () => {
-    const r = i.evalStmt(s.State(null), p.parseStatement(' continue; '), s.Flags(false, true));
-    expect(r).toEqual(['continue']);
+test('continue statement value', () => {
+    const r = i.evalStmt(s.State(null), p.parseStatement('continue;'), s.Flags(false, true));
+    expect(r).toEqual({ kind: 'continue', hasValue: true, value: a.none(null)  });
+});
+
+test('delete statement value', () => {
+    const top = s.State(null, toMap({ x: a.collection(toMap({ '1': a.number(1) })) }));
+    const r = i.evalStmt(top, p.parseStatement(' delete x[1]; '));
+    expect(r).toEqual({ kind: 'delete', hasValue: false, value: a.none(null)  });
 });
 
 test('delete statement attr', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ a: a.number(1) })) }));
-    const r = i.evalStmt(top, p.parseStatement(' delete x.a; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' delete x.a; '));
     expect(top.value().get('x').value.get('a')).toEqual(undefined);
 });
+
 test('delete statement nested', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({ z: a.number(1) }))  })) }));
-    const r = i.evalStmt(top, p.parseStatement(' delete x.y.z; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' delete x.y.z; '));
     expect(top.value().get('x').value.get('y').value.get('z')).toEqual(undefined);
 });
 test('delete statement sub', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ '1': a.number(1) })) }));
-    const r = i.evalStmt(top, p.parseStatement(' delete x[1]; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' delete x[1]; '));
     expect(top.value().get('x').value.get('1')).toEqual(undefined);
 });
+
+test('assignment statement value', () => {
+    const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
+    const r = i.evalStmt(top, p.parseStatement(' a = 1; '));
+    expect(r).toEqual({ kind: 'assignment', hasValue: false, value: a.number(1) });
+});
+
 test('assignment statement simple', () => {
     const top = s.State(null);
-    const r = i.evalStmt(top, p.parseStatement(' x = 1; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' x = 1; '));
     expect(top.value().get('x')).toEqual(a.number(1));
 });
 
 test('assignment statement chain', () => {
     const top = s.State(null);
-    const r = i.evalStmt(top, p.parseStatement(' x = y = z = 1; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' x = y = z = 1; '));
     expect(top.value().get('x')).toEqual(a.number(1));
     expect(top.value().get('y')).toEqual(a.number(1));
     expect(top.value().get('z')).toEqual(a.number(1));
@@ -511,109 +520,97 @@ test('assignment statement chain', () => {
 
 test('assignment statement attribute', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
-    const r = i.evalStmt(top, p.parseStatement(' x.a = 1; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' x.a = 1; '));
     expect(top.value().get('x').value.get('a')).toEqual(a.number(1));
 });
 
 test('assignment statement sub', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
-    const r = i.evalStmt(top, p.parseStatement(' x[1] = 1; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' x[1] = 1; '));
     expect(top.value().get('x').value.get('1')).toEqual(a.number(1));
 });
 
 test('assignment statement nested', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({})  )})) }));
-    const r = i.evalStmt(top, p.parseStatement(' x.y.z = 1; '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' x.y.z = 1; '));
     expect(top.value().get('x').value.get('y').value.get('z')).toEqual(a.number(1));
 });
 
 test('if statement simple', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; } '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' if (true) { x = 1; } '));
     expect(top.value().get('x')).toEqual(a.number(1));
 });
 
 test('if return', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; return x; } '), s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('if break', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; break; } '), s.Flags(false, true));
-    expect(r).toEqual(['break']);
+    expect(r).toEqual({ kind: 'break', hasValue: true, value: a.none(null)  });
 });
 
 test('if continue', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; continue; } '), s.Flags(false, true));
-    expect(r).toEqual(['continue']);
+    expect(r).toEqual({ kind: 'continue', hasValue: true, value: a.none(null)  });
 });
 
 test('if else statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else { x = -1; } '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else { x = -1; } '));
     expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('if elif statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (true) { x = -1; } '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (true) { x = -1; } '));
     expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('if elif else statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
-    const r = i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (false) { x = 2; } else { x = -1; } '));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (false) { x = 2; } else { x = -1; } '));
     expect(top.value().get('x')).toEqual(a.number(-1));
 });
 
 test('while statement', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; }'));
     expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('while statement return', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { return ++x; }'), s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(1)]);
+    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
 });
 
 test('while statement break simple', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { break; ++x; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' while (x < 10) { break; ++x; }'));
     expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('while statement break nested', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { while(true) break; ++x; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' while (x < 10) { while(true) break; ++x; }'));
     expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('while statement continue', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; continue; break; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; continue; break; }'));
     expect(top.value().get('x')).toEqual(a.number(10));
 });
 
 test('for statement simple', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; }'));
     expect(top.value().get('x')).toEqual(a.number(9));
     // i does not exist on top state.
     expect(top.value().get('i')).toEqual(undefined);
@@ -621,28 +618,34 @@ test('for statement simple', () => {
 
 test('for statement return', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { return i; x = i;}'), s.Flags(true, false));
-    expect(r).toEqual(['return', a.number(0)]);
+    i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { return i; x = i;}'), s.Flags(true, false));
     expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('for statement break', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { break; x = i; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { break; x = i; }'));
     expect(top.value().get('x')).toEqual(a.number(0));
 });
 
 test('for statement break nested', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { for(j = 0; true; ++j) break; x = i; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { for(j = 0; true; ++j) break; x = i; }'));
     expect(top.value().get('x')).toEqual(a.number(9));
 });
 
 test('for statement continue', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
-    const r = i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; continue; --i; }'));
-    expect(r).toEqual(null);
+    i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; continue; --i; }'));
     expect(top.value().get('x')).toEqual(a.number(9));
+});
+
+test('last value in block', () => {
+    const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { 1; 2; }'));
+    expect(r).toEqual({ kind: 'static', hasValue: false, value: a.number(2)});
+});
+
+test('last value in block empty', () => {
+    const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { } '));
+    expect(r).toEqual({ kind: 'empty', hasValue: false, value: a.none(null) });
 });
