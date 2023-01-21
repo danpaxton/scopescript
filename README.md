@@ -251,6 +251,9 @@ Assignment types cannot be mixed.<br>
 ## Closures
 Store parameters, function code, and a link to lexical environment.<br>
 
+Syntax, <br>
+`( expression, ..., expression ) => expression; | { body }`
+
 No parameters,<br>
 `foo = () => { message = 'Hello'; return message; }; foo();`
 
@@ -271,6 +274,9 @@ Currying,<br>
 
 ## Collections
 Store a collection of attributes mapped to a value.<br>
+
+Syntax, <br>
+`{ key expression : value expression, ..., key expression : value expression }`
 
 Empty,<br>
 `data = {};`<br>
@@ -502,10 +508,10 @@ for(i = 0; i < 20000; ++i) {
 targetNum = 126023076;
 
 numSteps = findNum(nums, targetNum);
-print("(Iteration) Found target: " + str(targetNum) + " in " + str(numSteps) + " steps." );
+print("(Iteration) Found target:", str(targetNum), "in", str(numSteps), "steps.");
 print();
 numSteps = binarySearch(nums, targetNum);
-print("(Binary Search) Found target: " + str(targetNum) + " in " + str(numSteps) + " steps." );
+print("(Binary Search) Found target:", str(targetNum), "in", str(numSteps), "steps.");
 ```
 ```
 (Iteration) Found target: 126023076 in 11226 steps. 
