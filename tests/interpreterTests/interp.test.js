@@ -660,7 +660,8 @@ test('program vars', () => {
     expect(r.vars).toEqual(toMap({ a: a.number(1), b: a.number(2) }));
 });
 
-test('program vars old values', () => {
-    const r = i.interpProgram(p.parseProgram('c = 3;'), toMap({ a: a.number(1), b: a.number(2) }));
-    expect(r.vars).toEqual(toMap({ a: a.number(1), b: a.number(2), c: a.number(3) }));
+test('program updates old vars', () => {
+    const m = toMap({ a: a.number(1) })
+    const r = i.interpProgram(p.parseProgram('a += 1;', m), m);
+    expect(r.vars).toEqual(toMap({ a: a.number(2) }));
 });

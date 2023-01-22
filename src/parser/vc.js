@@ -201,9 +201,9 @@ function vcStmt(env, stmt) {
   declared before they are used, (2) there are no duplicate parameters in closure definitions
   (3) Valid built-in function use, (4) Valid delete use.
  */
-// vc(stmts: Stmts[]): Undefined
-function vc(stmts) {
-    return vcBlock(new Set(), stmts)
+// vc(stmts: Stmts[], vars: Map): Undefined
+function vc(stmts, vars) {
+    return vcBlock(new Set(vars.keys()), stmts)
         .map(_ => undefined);
 }
 exports.vc = vc;

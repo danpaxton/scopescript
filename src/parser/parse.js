@@ -296,12 +296,12 @@ const parseStatement = input => {
 }
 exports.parseStatement = parseStatement;
 
-// parseProgram(input: String): Ok | Error
-const parseProgram = input => {
+// parseProgram(input: String, vars: Map): Ok | Error
+const parseProgram = (input, vars = new Map()) => {
     const result = ws.then(semiColon).then(stmt.many()).skip(P.end).parse(input);
     if (result.status) {
         const stmts = result.value;
-        return vc.vc(stmts).map(_ => stmts);
+        return vc.vc(stmts, vars).map(_ => stmts);
     } else {
         return error(`Line ${result.index.line}: Parse error. Unexpected token.`);
     }

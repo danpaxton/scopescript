@@ -9,6 +9,9 @@ exports.interpProgram = interpProgram;
 const runProgram = input => interpProgram(parseProgram(input));
 exports.runProgram = runProgram;
 
+// Parse and interpret program with old values.
 // runProgram(input: string, vars: Map): { kind: 'ok' | 'error', vars: Map, out: string[], last: string }
-const runProgramVars = (input, vars) => interpProgram(parseProgram(input), vars);
+const runProgramVars = (input, vars) => interpProgram(parseProgram(input, vars), vars);
 exports.runProgramVars = runProgramVars;
+
+
