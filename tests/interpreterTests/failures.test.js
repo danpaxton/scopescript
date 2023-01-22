@@ -117,3 +117,8 @@ test(' assignment fail', () => {
     const r = interpProgram({ kind: 'ok', value: [ val ]});
     expect(r.kind).toBe('error');
 });
+
+test('no last value for parse error', () => {
+    const r = runProgram(' asd]p ');
+    expect(r.last).toBe('none');
+});

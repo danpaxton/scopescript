@@ -5,6 +5,10 @@ exports.parseProgram = parseProgram;
 exports.interpProgram = interpProgram;
 
 // Parse and interpret progam.
-// runProgram(input: string): { kind: 'ok' | 'error', output: string[] }
+// runProgram(input: string): { kind: 'ok' | 'error', vars: Map, out: string[], last: string }
 const runProgram = input => interpProgram(parseProgram(input));
 exports.runProgram = runProgram;
+
+// runProgram(input: string, vars: Map): { kind: 'ok' | 'error', vars: Map, out: string[], last: string }
+const runProgramVars = (input, vars) => interpProgram(parseProgram(input), vars);
+exports.runProgramVars = runProgramVars;

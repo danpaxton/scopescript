@@ -497,17 +497,17 @@ const evalBlock = (scope, stmts, flags) => {
 exports.evalBlock = evalBlock;
 
 // interpProgram(program: Program): { kind: String, out: String[], last: String}
-const interpProgram = (program) => {
+const interpProgram = (program, vars = new Map()) => {
     if (program.kind === 'ok') {
         try {
-            const top = s.State(null);
+            const top = s.State(null, vars)
             const r = evalBlock(top, program.value);
-            return { kind: 'ok', out: top.out(), last: a.strRep(r.value) };
+            return { kind: 'ok', vars, out: top.out(), last: a.strRep(r.value) };
         } catch (e) {
-            return { kind: 'error', out: [e.message], last: 'none' };
+            return { kind: 'error', vars, out: [e.message], last: 'none' };
         }
     } else {
-        return { kind: 'error', out: [program.message], last: 'none' };
+        return { kind: 'error', vars, out: [program.message], last: 'none' };
     }
 };
 exports.interpProgram = interpProgram;

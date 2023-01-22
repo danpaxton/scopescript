@@ -649,3 +649,18 @@ test('last value in block empty', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { } '));
     expect(r).toEqual({ kind: 'empty', hasValue: false, value: a.none(null) });
 });
+
+test('last value in program', () => {
+    const r = i.interpProgram(p.parseProgram('x = 1; x = 2;'));
+    expect(r.last).toEqual('2');
+});
+
+test('program vars', () => {
+    const r = i.interpProgram(p.parseProgram('a = 1; b = 2;'));
+    expect(r.vars).toEqual(toMap({ a: a.number(1), b: a.number(2) }));
+});
+
+test('program vars old values', () => {
+    const r = i.interpProgram(p.parseProgram('c = 3;'), toMap({ a: a.number(1), b: a.number(2) }));
+    expect(r.vars).toEqual(toMap({ a: a.number(1), b: a.number(2), c: a.number(3) }));
+});
