@@ -304,7 +304,7 @@ Assign multiple variables, or attributes the same value using an assignment chai
 `a = b['key'] = c.val = 1;`<br>
 
 ### Compound assignment
-`'+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|='`<br>
+`'+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|='`<br>
 
 A variable must be defined before compound assignment.<br>
 
