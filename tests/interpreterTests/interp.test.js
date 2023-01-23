@@ -52,9 +52,9 @@ test('collection nested test', () => {
 test('simple closure test', () => {
     const top = s.State(null);
     const r = i.evalExpr(top, p.parseExpression(' (b, a) => 1 '));
-    expect(r.value.parent()).toEqual(top);
-    expect(r.value.params()).toEqual(['b', 'a']);
-    expect(r.value.body()).toEqual([{ kind: 'return', expr: { kind: 'number', value: 1, line: 1 }, line: 1 }]);
+    expect(r.value.parent).toEqual(top);
+    expect(r.value.params).toEqual(['b', 'a']);
+    expect(r.value.body).toEqual([{ kind: 'return', expr: { kind: 'number', value: 1, line: 1 }, line: 1 }]);
 });
 
 test('logical not', () => {
@@ -73,7 +73,7 @@ test('pre-increment', () => {
     // returned value.
     expect(r).toEqual(a.number(2));
     // variable value.
-    expect(top.value().get('x')).toEqual(a.number(2));
+    expect(top.value.get('x')).toEqual(a.number(2));
 });
 
 test('pre-decrement', () => {
@@ -82,7 +82,7 @@ test('pre-decrement', () => {
     // returned value.
     expect(r).toEqual(a.number(0));
     // variable value.
-    expect(top.value().get('x')).toEqual(a.number(0));
+    expect(top.value.get('x')).toEqual(a.number(0));
 });
 
 test('unary plus', () => {
@@ -223,7 +223,7 @@ test('attribute increment', () => {
     // returned value
     expect(r).toEqual(a.number(2));
     // value changes in memory.
-    expect(top.value().get('x').value.get('a')).toEqual(a.number(2));
+    expect(top.value.get('x').value.get('a')).toEqual(a.number(2));
 });
 
 test('attribute increment', () => {
@@ -232,7 +232,7 @@ test('attribute increment', () => {
     // returned value
     expect(r).toEqual(a.number(2));
     // value changes in memory.
-    expect(top.value().get('x').value.get('1')).toEqual(a.number(2));
+    expect(top.value.get('x').value.get('1')).toEqual(a.number(2));
 });
 
 test('attribute nested', () => {
@@ -420,37 +420,37 @@ test('built-in keys empty', () => {
 test('built-in print empty', () => {
     const top = s.State(null);
     i.evalStmt(top, p.parseStatement(' print(); '));
-    expect(top.out()).toEqual(['\n']);
+    expect(top.out).toEqual(['\n']);
 });
 
 test('built-in print simple', () => {
     const top = s.State(null);
     i.evalStmt(top, p.parseStatement(' print(1); '));
-    expect(top.out()).toEqual(['1', ' ', '\n']);
+    expect(top.out).toEqual(['1', ' ', '\n']);
 });
 
 test('built-in print new state', () => {
     const top = s.State(null);
     i.evalBlock(top, p.parseProgram(' print(1); if (true) { print(2); }').value, s.Flags(false, false) );
-    expect(top.out()).toEqual(['1', ' ', '\n', '2', ' ', '\n']);
+    expect(top.out).toEqual(['1', ' ', '\n', '2', ' ', '\n']);
 });
 
 test('built-in print more than one argument', () => {
     const top = s.State(null);
     i.evalStmt(top, p.parseStatement(' print(1, 2, 3); '));
-    expect(top.out()).toEqual(['1', ' ', '2', ' ', '3', ' ', '\n']);
+    expect(top.out).toEqual(['1', ' ', '2', ' ', '3', ' ', '\n']);
 });
 
 test('built-in print more than one', () => {
     const top = s.State(null);
     i.evalBlock(top, p.parseProgram(' print(1); print(2);').value, s.Flags(false, false) );
-    expect(top.out()).toEqual(['1', ' ', '\n', '2', ' ', '\n']);
+    expect(top.out).toEqual(['1', ' ', '\n', '2', ' ', '\n']);
 });
 
 test('named functions override built-in functions', () => {
     const top = s.State(null);
     i.evalBlock(top, p.parseProgram(' print = (a) => a; print(1); ').value, s.Flags(false, false) );
-    expect(top.out()).toEqual([]);
+    expect(top.out).toEqual([]);
 });
 
 // Statement tests.
@@ -484,18 +484,18 @@ test('delete statement value', () => {
 test('delete statement attr', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ a: a.number(1) })) }));
     i.evalStmt(top, p.parseStatement(' delete x.a; '));
-    expect(top.value().get('x').value.get('a')).toEqual(undefined);
+    expect(top.value.get('x').value.get('a')).toEqual(undefined);
 });
 
 test('delete statement nested', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({ z: a.number(1) }))  })) }));
     i.evalStmt(top, p.parseStatement(' delete x.y.z; '));
-    expect(top.value().get('x').value.get('y').value.get('z')).toEqual(undefined);
+    expect(top.value.get('x').value.get('y').value.get('z')).toEqual(undefined);
 });
 test('delete statement sub', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ '1': a.number(1) })) }));
     i.evalStmt(top, p.parseStatement(' delete x[1]; '));
-    expect(top.value().get('x').value.get('1')).toEqual(undefined);
+    expect(top.value.get('x').value.get('1')).toEqual(undefined);
 });
 
 test('assignment statement value', () => {
@@ -507,39 +507,39 @@ test('assignment statement value', () => {
 test('assignment statement simple', () => {
     const top = s.State(null);
     i.evalStmt(top, p.parseStatement(' x = 1; '));
-    expect(top.value().get('x')).toEqual(a.number(1));
+    expect(top.value.get('x')).toEqual(a.number(1));
 });
 
 test('assignment statement chain', () => {
     const top = s.State(null);
     i.evalStmt(top, p.parseStatement(' x = y = z = 1; '));
-    expect(top.value().get('x')).toEqual(a.number(1));
-    expect(top.value().get('y')).toEqual(a.number(1));
-    expect(top.value().get('z')).toEqual(a.number(1));
+    expect(top.value.get('x')).toEqual(a.number(1));
+    expect(top.value.get('y')).toEqual(a.number(1));
+    expect(top.value.get('z')).toEqual(a.number(1));
 });
 
 test('assignment statement attribute', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
     i.evalStmt(top, p.parseStatement(' x.a = 1; '));
-    expect(top.value().get('x').value.get('a')).toEqual(a.number(1));
+    expect(top.value.get('x').value.get('a')).toEqual(a.number(1));
 });
 
 test('assignment statement sub', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
     i.evalStmt(top, p.parseStatement(' x[1] = 1; '));
-    expect(top.value().get('x').value.get('1')).toEqual(a.number(1));
+    expect(top.value.get('x').value.get('1')).toEqual(a.number(1));
 });
 
 test('assignment statement nested', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ y: a.collection(toMap({})  )})) }));
     i.evalStmt(top, p.parseStatement(' x.y.z = 1; '));
-    expect(top.value().get('x').value.get('y').value.get('z')).toEqual(a.number(1));
+    expect(top.value.get('x').value.get('y').value.get('z')).toEqual(a.number(1));
 });
 
 test('if statement simple', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     i.evalStmt(top, p.parseStatement(' if (true) { x = 1; } '));
-    expect(top.value().get('x')).toEqual(a.number(1));
+    expect(top.value.get('x')).toEqual(a.number(1));
 });
 
 test('if return', () => {
@@ -563,25 +563,25 @@ test('if continue', () => {
 test('if else statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } else { x = -1; } '));
-    expect(top.value().get('x')).toEqual(a.number(-1));
+    expect(top.value.get('x')).toEqual(a.number(-1));
 });
 
 test('if elif statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (true) { x = -1; } '));
-    expect(top.value().get('x')).toEqual(a.number(-1));
+    expect(top.value.get('x')).toEqual(a.number(-1));
 });
 
 test('if elif else statement', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     i.evalStmt(top, p.parseStatement(' if (false) { x = 1; } elif (false) { x = 2; } else { x = -1; } '));
-    expect(top.value().get('x')).toEqual(a.number(-1));
+    expect(top.value.get('x')).toEqual(a.number(-1));
 });
 
 test('while statement', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; }'));
-    expect(top.value().get('x')).toEqual(a.number(10));
+    expect(top.value.get('x')).toEqual(a.number(10));
 });
 
 test('while statement return', () => {
@@ -593,51 +593,51 @@ test('while statement return', () => {
 test('while statement break simple', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement(' while (x < 10) { break; ++x; }'));
-    expect(top.value().get('x')).toEqual(a.number(0));
+    expect(top.value.get('x')).toEqual(a.number(0));
 });
 
 test('while statement break nested', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement(' while (x < 10) { while(true) break; ++x; }'));
-    expect(top.value().get('x')).toEqual(a.number(10));
+    expect(top.value.get('x')).toEqual(a.number(10));
 });
 
 test('while statement continue', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement(' while (x < 10) { ++x; continue; break; }'));
-    expect(top.value().get('x')).toEqual(a.number(10));
+    expect(top.value.get('x')).toEqual(a.number(10));
 });
 
 test('for statement simple', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; }'));
-    expect(top.value().get('x')).toEqual(a.number(9));
+    expect(top.value.get('x')).toEqual(a.number(9));
     // i does not exist on top state.
-    expect(top.value().get('i')).toEqual(undefined);
+    expect(top.value.get('i')).toEqual(undefined);
 });
 
 test('for statement return', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { return i; x = i;}'), s.Flags(true, false));
-    expect(top.value().get('x')).toEqual(a.number(0));
+    expect(top.value.get('x')).toEqual(a.number(0));
 });
 
 test('for statement break', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { break; x = i; }'));
-    expect(top.value().get('x')).toEqual(a.number(0));
+    expect(top.value.get('x')).toEqual(a.number(0));
 });
 
 test('for statement break nested', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { for(j = 0; true; ++j) break; x = i; }'));
-    expect(top.value().get('x')).toEqual(a.number(9));
+    expect(top.value.get('x')).toEqual(a.number(9));
 });
 
 test('for statement continue', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     i.evalStmt(top, p.parseStatement('for(i = 0; i < 10; ++i) { x = i; continue; --i; }'));
-    expect(top.value().get('x')).toEqual(a.number(9));
+    expect(top.value.get('x')).toEqual(a.number(9));
 });
 
 test('last value in block', () => {

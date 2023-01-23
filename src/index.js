@@ -14,4 +14,3 @@ exports.runProgram = runProgram;
 const runProgramVars = (input, vars) => interpProgram(parseProgram(input, vars), vars);
 exports.runProgramVars = runProgramVars;
 
-

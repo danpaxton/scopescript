@@ -230,7 +230,7 @@ const builtInFuncs = {
         return a.collection(res);
     },
     print: (scope, e) => {
-        const out = scope.out();
+        const out = scope.out;
         for (const arg of e.args) {
             // Push formatted value.
             out.push(a.strRep(evalExpr(scope, arg)));
@@ -325,7 +325,7 @@ const expressions = {
             error(`Line ${e.line}: invalid type for function call: '${funcExpr.kind}'`);
         }
         const func = funcExpr.value;
-        const params = func.params(), args = e.args;
+        const params = func.params, args = e.args;
         if (params.length !== args.length) {
             error(`Line ${e.line}: invalid argument count for ${name}(..): Expected ${params.length}.`);
         }
@@ -338,7 +338,7 @@ const expressions = {
         try {
             // Set inFunc flag only.
             // Execute function body in it's own enviroment. Return none if no return value.
-            const { kind, value } = evalBlock(s.getEnv(func), func.body(), s.Flags(true, false));
+            const { kind, value } = evalBlock(s.getEnv(func), func.body, s.Flags(true, false));
             return kind == 'return' ? value : a.none(null);
         } catch (excep) {
             // Recursion Error.
@@ -352,21 +352,21 @@ const expressions = {
 
 const statements = {
     break: (scope, stmt, flags) => {
-        if (!flags.inLoop()) {
+        if (!flags.inLoop) {
             error(`Line ${stmt.line}: break outside of loop.`);
         }
         // Break has value.
         return { kind: 'break', hasValue: true, value: a.none(null) }
     },
     continue: (scope, stmt, flags) => {
-        if (!flags.inLoop()) {
+        if (!flags.inLoop) {
             error(`Line ${stmt.line}: continue outside of loop.`);
         }
         // Continue has value.
         return { kind: 'continue', hasValue: true, value: a.none(null)  }
     },
     return: (scope, stmt, flags) => {
-        if (!flags.inFunc()) {
+        if (!flags.inFunc) {
             error(`Line ${stmt.line}: return outside of function.`);
         }
         // Return has value.
@@ -418,7 +418,7 @@ const statements = {
         // Create new scope.
         const newScope = s.childState(scope);
         // Set inLoop flag, and maintain inFunc flag.
-        const newFlags = s.Flags(flags.inFunc(), true);
+        const newFlags = s.Flags(flags.inFunc, true);
 
         let res;
         while (evalExpr(scope, stmt.test).value) {
@@ -441,7 +441,7 @@ const statements = {
             evalStmt(newScope, init);
         }
         // Set inLoop flag, and maintain inFunc flag.
-        const newFlags = s.Flags(flags.inFunc(), true);
+        const newFlags = s.Flags(flags.inFunc, true);
         let res;
         while(evalExpr(newScope, stmt.test).value) {
             res = evalBlock(newScope, stmt.body, newFlags);
@@ -502,7 +502,8 @@ const interpProgram = (program, vars = new Map()) => {
         try {
             const top = s.State(null, vars)
             const r = evalBlock(top, program.value);
-            return { kind: 'ok', vars, out: top.out(), last: a.strRep(r.value) };
+            // Convert vars to string.
+            return { kind: 'ok', vars, out: top.out, last: a.strRep(r.value) };
         } catch (e) {
             return { kind: 'error', vars, out: [e.message], last: 'none' };
         }

@@ -31,56 +31,56 @@ test('variable find deep state', () =>  {
 test('simple variable set non-existing', () =>  {
     const state = s.State(null, toMap({}));
     s.setVariable(state, 'foo', a.number(2));
-    expect(state.value().get('foo')).toEqual(a.number(2));
+    expect(state.value.get('foo')).toEqual(a.number(2));
 });
 
 test('simple variable set existing', () =>  {
     const state = s.State(null, toMap({ foo: a.number(1) }));
     s.setVariable(state, 'foo', a.number(2));
-    expect(state.value().get('foo')).toEqual(a.number(2));
+    expect(state.value.get('foo')).toEqual(a.number(2));
 });
 
 test('variable set more than one state', () =>  {
     const state = s.State(s.State(null));
     s.setVariable(state, 'foo', a.number(1));
     // Parent state remains unchanged.
-    expect(state.parent().value().get('foo')).toEqual(undefined);
+    expect(state.parent.value.get('foo')).toEqual(undefined);
     // Only current state is updated.
-    expect(state.value().get('foo')).toEqual(a.number(1));
+    expect(state.value.get('foo')).toEqual(a.number(1));
 });
 
 test('variable set first occurence', () =>  {
     const state = s.State(s.State(null, toMap({ foo: a.number(1) })), toMap({ foo: a.number(1) }));
     s.setVariable(state, 'foo', a.number(2));
     // parent state 'foo' value is unchanged.
-    expect(state.parent().value().get('foo')).toEqual(a.number(1));
+    expect(state.parent.value.get('foo')).toEqual(a.number(1));
     // current state 'foo' is changed.
-    expect(state.value().get('foo')).toEqual(a.number(2));
+    expect(state.value.get('foo')).toEqual(a.number(2));
 });
 
 test('variable set deep state', () =>  {
     const state = s.State(s.State(s.State(s.State(s.State(s.State(s.State(s.State(null), toMap({ foo: a.number(1)}))))))));
     s.setVariable(state, 'foo', a.number(2));
-    expect(state.parent().parent().parent().parent().parent().parent().value().get('foo')).toEqual(a.number(2));
+    expect(state.parent.parent.parent.parent.parent.parent.value.get('foo')).toEqual(a.number(2));
 });
 
 test('child state creation', () => {
     const parent = s.State(null);
     const child = s.childState(parent);
-    expect(child.out()).toBe(parent.out());
+    expect(child.out).toBe(parent.out);
 });
 
 test('closure creation', () => {
     const parent = s.State(null, toMap({ foo: a.number(1)}));
     const child = s.Closure(parent, null, null);
-    expect(child.parent()).toBe(parent);
+    expect(child.parent).toBe(parent);
 });
 
 test('simple closure environment', () => {
     const parent = s.State(null, toMap({ foo: a.number(1)}));
     const child = s.Closure(parent, null, null);
     s.newEnv(child);
-    expect(s.getEnv(child).parent()).toBe(parent);
+    expect(s.getEnv(child).parent).toBe(parent);
 });
 
 test('closure environment more than one', () => {
@@ -90,7 +90,7 @@ test('closure environment more than one', () => {
     s.newEnv(child);
     s.newEnv(child);
     // Both environments share the same parent state.
-    expect(s.getEnv(child).parent()).toBe(s.getEnv(child).parent());
+    expect(s.getEnv(child).parent).toBe(s.getEnv(child).parent);
     
 });
 

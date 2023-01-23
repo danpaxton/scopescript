@@ -1,6 +1,6 @@
 {
   "name": "scopescript",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "This module combines a parser and interpreter to make a fully functional programming langauge called ScopeScript.",
   "main": "src/index.js",
   "scripts": {
