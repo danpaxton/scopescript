@@ -84,8 +84,8 @@ Below is a set of instructions that define valid statements and expressions for 
 `| { kind: 'unop', op: unop, expr: expression }`<br>
 `| { kind: 'binop', op: binop, e1: expression, e2: expression }`<br>
 `| { kind: 'call', fun: expression, args: expression[] }`<br>
-`| { kind: 'subscriptor', dict: expression, expression: expression }`<br>
-`| { kind: 'attribute', dict: expression, attribute: name }`<br>
+`| { kind: 'subscriptor', collection: expression, expression: expression }`<br>
+`| { kind: 'attribute', collection: expression, attribute: name }`<br>
 `| { kind: 'ternary', test: expression, trueExpr: expression, falseExpr: expression }`<br>
 
 ### Statements
