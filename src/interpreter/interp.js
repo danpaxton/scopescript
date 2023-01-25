@@ -350,30 +350,32 @@ const expressions = {
     }
 }
 
+
+
 const statements = {
     break: (scope, stmt, flags) => {
         if (!flags.inLoop) {
             error(`Line ${stmt.line}: break outside of loop.`);
         }
-        // Break has value.
-        return { kind: 'break', hasValue: true, value: a.none(null) }
+        // Break stops block execution.
+        return { kind: 'break', stop: true, value: a.none(null) }
     },
     continue: (scope, stmt, flags) => {
         if (!flags.inLoop) {
             error(`Line ${stmt.line}: continue outside of loop.`);
         }
-        // Continue has value.
-        return { kind: 'continue', hasValue: true, value: a.none(null)  }
+        // Continue stops block execution.
+        return { kind: 'continue', stop: true, value: a.none(null)  }
     },
     return: (scope, stmt, flags) => {
         if (!flags.inFunc) {
             error(`Line ${stmt.line}: return outside of function.`);
         }
-        // Return has value.
-        return { kind: 'return', hasValue: true, value: evalExpr(scope, stmt.expr) };
+        // Return stops block execution.
+        return { kind: 'return', stop: true, value: evalExpr(scope, stmt.expr) };
     },
     static: (scope, stmt, flags) => {
-        return { kind: 'static', hasValue: false, value: evalExpr(scope, stmt.expr) }
+        return { kind: 'static', stop: false, value: evalExpr(scope, stmt.expr) };
     },
     delete:  (scope, stmt, flags) => {
         const expr = stmt.expr;
@@ -390,7 +392,7 @@ const statements = {
         } else {
             error(`Line ${stmt.line}: unknown attribute reference for deletion: '${attr}'.`);
         }
-        return { kind: 'delete', hasValue: false, value: a.none(null) };
+        return { kind: 'delete', stop: false, value: a.none(null) };
     },
     assignment: (scope, stmt, flags) => {
         const val = evalExpr(scope, stmt.expr);
@@ -400,7 +402,7 @@ const statements = {
                 error(`Line ${e.line}: invalid assignment type: '${e.kind}'.`);
             }
         }
-        return { kind: 'assignment', hasValue: false, value: val };
+        return { kind: 'assignment', stop: false, value: val };
     },
     if: (scope, stmt, flags) => {
         const newScope = s.childState(scope);
@@ -418,20 +420,18 @@ const statements = {
         // Create new scope.
         const newScope = s.childState(scope);
         // Set inLoop flag, and maintain inFunc flag.
-        const newFlags = s.Flags(flags.inFunc, true);
+        const newFlags = s.Flags(flags.inFunc, true)
 
-        let res;
         while (evalExpr(scope, stmt.test).value) {
-            res = evalBlock(newScope, stmt.body, newFlags);
-            if (res.kind == 'return') {
-                return res;
+            const curr = evalBlock(newScope, stmt.body, newFlags);
+            if (curr.kind == 'return') {
+                return curr;
             }
-            if (res.kind == 'break') {
-                res.hasValue = false;
-                return res;
+            if (curr.kind == 'break') {
+                break;
             }
         }
-        return res;
+        return { kind: 'empty', stop: false, value: a.none(null) };
     },
     for: (scope, stmt, flags) => {
         // Create new scope.
@@ -442,21 +442,20 @@ const statements = {
         }
         // Set inLoop flag, and maintain inFunc flag.
         const newFlags = s.Flags(flags.inFunc, true);
-        let res;
+
         while(evalExpr(newScope, stmt.test).value) {
-            res = evalBlock(newScope, stmt.body, newFlags);
-            if (res.kind == 'return') {
-                return res
+            const curr = evalBlock(newScope, stmt.body, newFlags);
+            if (curr.kind == 'return') {
+                return curr
             }
-            if (res.kind == 'break') {
-                res.hasValue = false;
-                return res;
+            if (curr.kind == 'break') {
+                break;
             }
             for (const update of stmt.updates) {
                 evalStmt(newScope, update);
             }
         }
-        return res;
+        return { kind: 'empty', stop: false, value: a.none(null) };
     }
 };
 
@@ -483,12 +482,12 @@ const evalStmt = (scope, stmt, flags = s.Flags(false, false)) => {
 };
 exports.evalStmt = evalStmt;
 
-// evalBlock(flags: Flags, scope: State, stmts: Statements[]): Atom | null
+// evalBlock(flags: Flags, scope: State, stmts: Statements[]): Stmt
 const evalBlock = (scope, stmts, flags) => {
-    let res = { kind: 'empty', hasValue: false, value: a.none(null) }
+    let res = { kind: 'empty', stop: false, value: a.none(null) };
     for (const stmt of stmts) {
         res = evalStmt(scope, stmt, flags);
-        if (res.hasValue) {
+        if (res.stop) {
             break;
         }
     }
@@ -496,7 +495,7 @@ const evalBlock = (scope, stmts, flags) => {
 }
 exports.evalBlock = evalBlock;
 
-// interpProgram(program: Program): { kind: String, out: String[], last: String}
+// interpProgram(program: Program): { kind: String, vars: Map, out: String[], last: String}
 const interpProgram = (program, vars = new Map()) => {
     if (program.kind === 'ok') {
         try {

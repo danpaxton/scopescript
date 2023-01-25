@@ -282,52 +282,52 @@ test('ternary falseExpr', () => {
 
 test('call simple', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = () => 1; return x();').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('tracks only enumerable properties', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('toString = () => 1; if (true){ return toString(); }').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('call in-place', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('return (() => 1)();').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('call one argument', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a) => a; return x(1);').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('call arguments override global variables', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('a = -1; x = (a) => a; return x(1);').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('call more than one argument', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a, b) => a + b; return x(2, 3);').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(5) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(5) });
 });
 
 test('call recursive', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (a) => a < 100 ? x(a + 1) : a; return x(0);').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(100) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(100) });
 });
 
 test('call curry', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = a => b => c => a + b + c; return x(1)(2)(3);').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(6) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(6) });
 });
 
 test('call closure simple', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = a => () => ++a; b = x(0); return b() + b();').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(3) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(3) });
 });
 
 test('recursive closure creation', () => {
     const r = i.evalBlock(s.State(null), p.parseProgram('x = (v , n) => { val: () => v, next: () => n }; list = x(-5, x(5, none)); return list.val() + list.next().val();').value, s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(0) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(0) });
 });
 
 // Built-in function tests.
@@ -457,28 +457,28 @@ test('named functions override built-in functions', () => {
 
 test('static test', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' 1; '));
-    expect(r).toEqual({ kind: 'static', hasValue: false, value: a.number(1) });
+    expect(r).toEqual({ kind: 'static', stop: false, value: a.number(1) });
 });
 
 test('return statement', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' return 1; '), s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('break statement', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement(' break; '), s.Flags(false, true));
-    expect(r).toEqual({ kind: 'break', hasValue: true, value: a.none(null) });
+    expect(r).toEqual({ kind: 'break', stop: true, value: a.none(null) });
 });
 
 test('continue statement value', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement('continue;'), s.Flags(false, true));
-    expect(r).toEqual({ kind: 'continue', hasValue: true, value: a.none(null)  });
+    expect(r).toEqual({ kind: 'continue', stop: true, value: a.none(null)  });
 });
 
 test('delete statement value', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({ '1': a.number(1) })) }));
     const r = i.evalStmt(top, p.parseStatement(' delete x[1]; '));
-    expect(r).toEqual({ kind: 'delete', hasValue: false, value: a.none(null)  });
+    expect(r).toEqual({ kind: 'delete', stop: false, value: a.none(null)  });
 });
 
 test('delete statement attr', () => {
@@ -501,7 +501,7 @@ test('delete statement sub', () => {
 test('assignment statement value', () => {
     const top = s.State(null, toMap({ x: a.collection(toMap({}) )}));
     const r = i.evalStmt(top, p.parseStatement(' a = 1; '));
-    expect(r).toEqual({ kind: 'assignment', hasValue: false, value: a.number(1) });
+    expect(r).toEqual({ kind: 'assignment', stop: false, value: a.number(1) });
 });
 
 test('assignment statement simple', () => {
@@ -545,19 +545,19 @@ test('if statement simple', () => {
 test('if return', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; return x; } '), s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('if break', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; break; } '), s.Flags(false, true));
-    expect(r).toEqual({ kind: 'break', hasValue: true, value: a.none(null)  });
+    expect(r).toEqual({ kind: 'break', stop: true, value: a.none(null)  });
 });
 
 test('if continue', () => {
     const top = s.State(null, toMap({ x: a.none(null) }));
     const r = i.evalStmt(top, p.parseStatement(' if (true) { x = 1; continue; } '), s.Flags(false, true));
-    expect(r).toEqual({ kind: 'continue', hasValue: true, value: a.none(null)  });
+    expect(r).toEqual({ kind: 'continue', stop: true, value: a.none(null)  });
 });
 
 test('if else statement', () => {
@@ -587,7 +587,7 @@ test('while statement', () => {
 test('while statement return', () => {
     const top = s.State(null, toMap({ x: a.number(0) }));
     const r = i.evalStmt(top, p.parseStatement(' while (x < 10) { return ++x; }'), s.Flags(true, false));
-    expect(r).toEqual({ kind: 'return', hasValue: true, value: a.number(1) });
+    expect(r).toEqual({ kind: 'return', stop: true, value: a.number(1) });
 });
 
 test('while statement break simple', () => {
@@ -642,12 +642,12 @@ test('for statement continue', () => {
 
 test('last value in block', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { 1; 2; }'));
-    expect(r).toEqual({ kind: 'static', hasValue: false, value: a.number(2)});
+    expect(r).toEqual({ kind: 'static', stop: false, value: a.number(2)});
 });
 
 test('last value in block empty', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { } '));
-    expect(r).toEqual({ kind: 'empty', hasValue: false, value: a.none(null) });
+    expect(r).toEqual({ kind: 'empty', stop: false, value: a.none(null) });
 });
 
 test('last value in program', () => {

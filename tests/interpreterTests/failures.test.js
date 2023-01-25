@@ -122,3 +122,18 @@ test('no last value for parse error', () => {
     const r = runProgram(' asd]p ');
     expect(r.last).toBe('none');
 });
+
+test('for stmt empty return value', () => {
+    const r = runProgram(' for(i = 0; false; ++i) {}');
+    expect(r.kind).toBe('ok');
+});
+
+test('while stmt empty return value', () => {
+    const r = runProgram(' while(false) {}');
+    expect(r.kind).toBe('ok');
+});
+
+test('if stmt empty return value', () => {
+    const r = runProgram(' if(false) {}');
+    expect(r.kind).toBe('ok');
+});
