@@ -645,6 +645,16 @@ test('last value in block', () => {
     expect(r).toEqual({ kind: 'static', stop: false, value: a.number(2)});
 });
 
+test('last value in while block', () => {
+    const r = i.evalStmt(s.State(null, toMap({ x: a.number(0) })), p.parseStatement('while (x < 1) { ++x; 1; }'));
+    expect(r).toEqual({ kind: 'static', stop: false, value: a.number(1)});
+});
+
+test('last value in for block', () => {
+    const r = i.evalStmt(s.State(null, toMap({ x: a.number(0) })), p.parseStatement('for (i = 0; i < 1; ++i) { 2; }'));
+    expect(r).toEqual({ kind: 'static', stop: false, value: a.number(2)});
+});
+
 test('last value in block empty', () => {
     const r = i.evalStmt(s.State(null), p.parseStatement('if (true) { } '));
     expect(r).toEqual({ kind: 'empty', stop: false, value: a.none(null) });

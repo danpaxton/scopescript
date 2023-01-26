@@ -350,7 +350,8 @@ const expressions = {
     }
 }
 
-
+// Returns an empty statement that continues block execution.
+const emptyStmt = () => ({ kind: 'empty', stop: false, value: a.none(null) });
 
 const statements = {
     break: (scope, stmt, flags) => {
@@ -420,18 +421,20 @@ const statements = {
         // Create new scope.
         const newScope = s.childState(scope);
         // Set inLoop flag, and maintain inFunc flag.
-        const newFlags = s.Flags(flags.inFunc, true)
+        const newFlags = s.Flags(flags.inFunc, true);
 
+        let res = emptyStmt();
         while (evalExpr(scope, stmt.test).value) {
-            const curr = evalBlock(newScope, stmt.body, newFlags);
-            if (curr.kind == 'return') {
-                return curr;
+            res = evalBlock(newScope, stmt.body, newFlags);
+            if (res.kind == 'return') {
+                break;
             }
-            if (curr.kind == 'break') {
+            if (res.kind == 'break') {
+                res.stop = false;
                 break;
             }
         }
-        return { kind: 'empty', stop: false, value: a.none(null) };
+        return res;
     },
     for: (scope, stmt, flags) => {
         // Create new scope.
@@ -443,19 +446,21 @@ const statements = {
         // Set inLoop flag, and maintain inFunc flag.
         const newFlags = s.Flags(flags.inFunc, true);
 
+        let res = emptyStmt();
         while(evalExpr(newScope, stmt.test).value) {
-            const curr = evalBlock(newScope, stmt.body, newFlags);
-            if (curr.kind == 'return') {
-                return curr
+            res = evalBlock(newScope, stmt.body, newFlags);
+            if (res.kind == 'return') {
+                break;
             }
-            if (curr.kind == 'break') {
+            if (res.kind == 'break') {
+                res.stop = false;
                 break;
             }
             for (const update of stmt.updates) {
                 evalStmt(newScope, update);
             }
         }
-        return { kind: 'empty', stop: false, value: a.none(null) };
+        return res
     }
 };
 
@@ -484,7 +489,7 @@ exports.evalStmt = evalStmt;
 
 // evalBlock(flags: Flags, scope: State, stmts: Statements[]): Stmt
 const evalBlock = (scope, stmts, flags) => {
-    let res = { kind: 'empty', stop: false, value: a.none(null) };
+    let res = emptyStmt();
     for (const stmt of stmts) {
         res = evalStmt(scope, stmt, flags);
         if (res.stop) {
