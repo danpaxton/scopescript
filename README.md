@@ -507,10 +507,10 @@ for(i = 0; i < 20000; ++i) {
 targetNum = 126023076;
 
 numSteps = findNum(nums, targetNum);
-print("(Iteration) Found target:", str(targetNum), "in", str(numSteps), "steps.");
+print("(Iteration) Found target:", targetNum, "in", numSteps, "steps.");
 print();
 numSteps = binarySearch(nums, targetNum);
-print("(Binary Search) Found target:", str(targetNum), "in", str(numSteps), "steps.");
+print("(Binary Search) Found target:", targetNum, "in", numSteps, "steps.");
 ```
 ```
 (Iteration) Found target: 126023076 in 11226 steps. 
