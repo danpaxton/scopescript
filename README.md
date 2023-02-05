@@ -222,7 +222,7 @@ Built in functions with default return values unless overwritten.<br>
 Store parameters, function code, and a link to lexical environment.<br>
 
 Syntax, <br>
-`( expression, ..., expression ) => expression | { body }`
+`( name, ..., name ) => expression | { body }`
 
 No parameters,<br>
 `foo = () => { message = 'Hello'; return message; }; foo();`
@@ -246,7 +246,7 @@ Currying,<br>
 Store a collection of attributes mapped to a value.<br>
 
 Syntax, <br>
-`{ key expression : value expression, ..., key expression : value expression }`
+`{ atom : expression, ..., atom : expression }`
 
 Empty,<br>
 `data = {};`<br>
